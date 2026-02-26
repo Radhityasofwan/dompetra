@@ -1111,6 +1111,34 @@ body {
     outline: none;
 }
 
+/* --- Budget-page search & filter pills --- */
+#finance-app-root #budget-search {
+    -webkit-user-select: text;
+    user-select: text;
+    font-size: 15px;
+    padding: 14px 18px 14px 48px;
+    border-radius: 18px;
+}
+
+#finance-app-root #budget-search::placeholder {
+    color: var(--fin-text-muted);
+    font-weight: 500;
+}
+
+/* Active state for 3-state filter pills */
+#finance-app-root .btn-pill.active-filter {
+    background: var(--fin-primary) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+/* Budget bulk action bar */
+#finance-app-root #budget-bulk-bar.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+
 #finance-app-root .num-btn {
     background: transparent;
     border: 1px solid var(--fin-border);

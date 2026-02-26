@@ -15,6 +15,7 @@ D.state = D.state || {
     numBuffer: '0', selectionMode: false, selectedIds: new Set(),
     filter: { mode: 'payday', start: null, end: null, budgetActiveOnly: true },
     listFilter: { search: '', type: 'all', walletId: 'all', catId: 'all' },
+    budgetFilter: { status: 'active', search: '' },
     filteredTxs: [], filterLabel: '', pendingBudgetId: null,
     quickActions: [], budgetTemplates: [], currentPage: 'home'
 };
@@ -338,7 +339,7 @@ Object.assign(D.utils, {
         S.filter.start = D.utils.startOfDay(s); S.filter.end = D.utils.endOfDay(e);
         S.filterLabel = `${s.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })} - ${e.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}`;
 
-        ['cycle-filter-disp', 'list-period-disp', 'list-period-chip', 'budget-period-disp', 'exp-period-label', 'an-period-disp'].forEach(i => {
+        ['cycle-filter-disp', 'list-period-disp', 'list-period-chip', 'budget-period-disp', 'budget-period-chip', 'exp-period-label', 'an-period-disp'].forEach(i => {
             const el = document.getElementById(i); if (el) el.innerText = S.filterLabel;
         });
     },
@@ -406,6 +407,45 @@ Object.assign(D.utils, {
     })(),
 
     toggleBudgetFilter: () => { S.filter.budgetActiveOnly = !S.filter.budgetActiveOnly; if (D.render && D.render.budgets) D.render.budgets(); },
+
+    /* --- Budget Filter / Search --- */
+    setBudgetStatusFilter: (status) => {
+        S.budgetFilter.status = status;
+        // Update button states
+        ['btn-bfilter-all', 'btn-bfilter-active', 'btn-bfilter-expired'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('active-filter');
+        });
+        const active = document.getElementById('btn-bfilter-' + status);
+        if (active) active.classList.add('active-filter');
+        if (D.render && D.render.budgets) D.render.budgets();
+    },
+
+    onBudgetSearch: (() => {
+        let timer = null;
+        return (val) => {
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                S.budgetFilter.search = val;
+                if (D.render && D.render.budgets) D.render.budgets();
+            }, 220);
+        };
+    })(),
+
+    /* Toggle a budget ID in the selectedBudgetIds set for bulk template action */
+    toggleBudgetSelect: (id) => {
+        if (!S.selectedBudgetIds) S.selectedBudgetIds = new Set();
+        if (S.selectedBudgetIds.has(id)) S.selectedBudgetIds.delete(id);
+        else S.selectedBudgetIds.add(id);
+        /* Update bulk bar visibility */
+        const bar = document.getElementById('budget-bulk-bar');
+        const cnt = document.getElementById('budget-sel-count');
+        if (bar) bar.classList.toggle('active', S.selectedBudgetIds.size > 0);
+        if (cnt) cnt.innerText = S.selectedBudgetIds.size;
+        if (D.render && D.render.budgets) D.render.budgets();
+    },
+
+
     openFilter: () => { const fs = document.getElementById('filter-start'); const fe = document.getElementById('filter-end'); if (fs) fs.value = new Date(S.filter.start).toISOString().slice(0, 10); if (fe) fe.value = new Date(S.filter.end).toISOString().slice(0, 10); document.getElementById('modalFilter')?.classList.add('open'); },
     toggleSelectionMode: () => { S.selectionMode = !S.selectionMode; S.selectedIds = new Set(); const nb = document.getElementById('nav-bar'); const bb = document.getElementById('bulk-bar'); if (nb) nb.classList.toggle('hidden', S.selectionMode); if (bb) bb.classList.toggle('active', S.selectionMode); if (D.render && D.render.list) D.render.list(); },
     toggleItem: (id) => { if (S.selectedIds.has(id)) S.selectedIds.delete(id); else S.selectedIds.add(id); const c = document.getElementById('sel-count'); if (c) c.innerText = S.selectedIds.size; if (D.render && D.render.list) D.render.list(); },

@@ -2,14 +2,14 @@
  * DOMPETRA - DATA MANAGEMENT MODULE
  * ULTRA OPTIMIZED: Concurrency Lock, O(N) Execution, Optimistic UI Updates.
  */
-(function(D) {
+(function (D) {
     const S = D.state;
     const U = D.utils;
     const sb = D.sb;
 
     // Helper ID Generator (Fast UUID/Fallback)
     const genId = (p) => {
-        if(window.crypto && window.crypto.randomUUID) {
+        if (window.crypto && window.crypto.randomUUID) {
             return `${p}-${crypto.randomUUID()}`;
         }
         return `${p}-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 9)}`;
@@ -46,7 +46,7 @@
 
         fetchRemote: async () => {
             if (!sb || !S.user || isFetching) return; // FIX: Mencegah request ganda ke database
-            
+
             isFetching = true;
             try {
                 const uid = S.user.id;
@@ -67,13 +67,13 @@
                 const { data: gs } = await sb.from('group_members')
                     .select('group_id, groups(name, join_code)')
                     .eq('user_id', uid);
-                
+
                 S.groups = gs ? gs.map(x => ({ ...x.groups, id: x.group_id })) : [];
 
                 // Update UI for Group
                 const noGroup = document.getElementById('no-group-view');
                 const hasGroup = document.getElementById('has-group-view');
-                
+
                 if (S.groups.length) {
                     if (noGroup) noGroup.style.display = 'none';
                     if (hasGroup) hasGroup.style.display = 'block';
@@ -100,11 +100,11 @@
                 // Fetch Group Members or Owner
                 if (gid) {
                     const { data: mems } = await sb.from('group_members').select('role, user_id').eq('group_id', gid);
-                    
+
                     if (mems && mems.length > 0) {
                         const uids = mems.map(m => m.user_id);
                         const { data: profs } = await sb.from('profiles').select('id, full_name, whatsapp_number, avatar_url').in('id', uids);
-                        
+
                         S.members = mems.map(m => ({
                             ...m,
                             profiles: (profs || []).find(pr => pr.id === m.user_id) || {}
@@ -162,7 +162,7 @@
                 // Refresh UI (Silent & Fast)
                 D.data.loadQA();
                 D.utils.applyFilter();
-                
+
                 // Trigger Tutorial Check (Deferred)
                 setTimeout(() => {
                     if (D.tutorial && typeof D.tutorial.init === 'function') D.tutorial.init();
@@ -213,7 +213,7 @@
             let totalUsed = 0;
             const limit = parseFloat(budget.limit);
             if (!limit || limit <= 0) return;
-            
+
             const txs = S.txs || [];
             // O(N) Loop murni: Lebih cepat dari .filter().reduce()
             for (let i = 0; i < txs.length; i++) {
@@ -227,11 +227,11 @@
             if (pct >= 80) {
                 const today = new Date().toDateString();
                 const alertKey = `alert_${budgetId}_${today}`;
-                
+
                 // Mencegah Spam Notifikasi
                 if (!localStorage.getItem(alertKey)) {
                     localStorage.setItem(alertKey, 'true');
-                    
+
                     // Trigger webhook ke server backend secara senyap tanpa await (Non-Blocking)
                     fetch('/api/send_alert.php', {
                         method: 'POST',
@@ -252,12 +252,12 @@
             const id = U.id('tx-id').value;
             const desc = U.id('tx-desc').value;
             const rawAmount = D.pad && typeof D.pad.val === 'function' ? D.pad.val() : 0;
-            const amount = parseFloat(rawAmount) || 0; 
+            const amount = parseFloat(rawAmount) || 0;
 
             if (amount <= 0) return U.toast('Nominal harus > 0');
-            
+
             U.closeAll(); // Tutup modal instan untuk UX super cepat
-            
+
             try {
                 if (mode === 'tx') {
                     const catId = U.id('tx-cat-id').value;
@@ -344,13 +344,20 @@
                     }
 
                 } else if (mode === 'budget') {
+                    const startDate = U.id('budget-start')?.value || new Date().toISOString().slice(0, 10);
+                    const duration = parseInt(U.id('budget-duration')?.value || '30');
+                    const catId = U.id('budget-cat-id')?.value || null;
+
                     const pl = {
                         name: desc || 'Budget',
-                        "limit": amount,
+                        'limit': amount,
+                        start_date: startDate,
+                        duration_days: duration,
+                        catId: catId,
                         user_id: S.user.id,
                         group_id: S.activeGroupId || null
                     };
-                    
+
                     if (id) {
                         const bIdx = S.budgets.findIndex(b => b.id == id);
                         if (bIdx > -1) S.budgets[bIdx] = { ...S.budgets[bIdx], ...pl };
@@ -371,7 +378,7 @@
                         user_id: S.user.id,
                         group_id: S.activeGroupId || null
                     };
-                    
+
                     if (id) {
                         const gIdx = S.goals.findIndex(g => g.id == id);
                         if (gIdx > -1) S.goals[gIdx] = { ...S.goals[gIdx], ...pl };
@@ -445,7 +452,7 @@
 
                         } else {
                             await sb.from('transactions').delete().eq('id', id);
-                            D.data.fetchRemote(); 
+                            D.data.fetchRemote();
                         }
 
                     } else {
@@ -485,7 +492,7 @@
             try {
                 if (id) await sb.from('categories').update(pl).eq('id', id);
                 else await sb.from('categories').insert({ ...pl, id: genId('c') });
-                
+
                 U.closeAll();
                 D.data.fetchRemote();
                 U.toast('Disimpan');
@@ -527,7 +534,7 @@
                     await sb.from('wallets').insert(newW);
                 }
 
-                D.utils.applyFilter(); 
+                D.utils.applyFilter();
                 D.render.wallets();
                 U.toast('Dompet disimpan');
             } catch (e) {
@@ -543,8 +550,8 @@
                 U.closeAll();
                 try {
                     S.wallets = S.wallets.filter(w => w.id !== id);
-                    D.utils.applyFilter(); 
-                    D.render.wallets();    
+                    D.utils.applyFilter();
+                    D.render.wallets();
                     await sb.from('wallets').delete().eq('id', id);
                     U.toast('Dompet dihapus');
                 } catch (e) {
@@ -578,7 +585,7 @@
                 const path = `${S.user.id}/${Date.now()}.${ext}`;
                 const btn = document.querySelector('#modalProfile .num-btn');
                 if (btn) { btn.innerText = 'Mengupload...'; btn.disabled = true; }
-                
+
                 try {
                     const { error: ue } = await sb.storage.from('avatars').upload(path, f, { upsert: true });
                     if (ue) throw ue;
@@ -620,9 +627,9 @@
                     };
 
                     // Optimistic update state lokal
-                    S.txs.unshift({...pl, id: genId('tx')});
+                    S.txs.unshift({ ...pl, id: genId('tx') });
                     const wIdx = S.wallets.findIndex(wl => wl.id === w.id);
-                    if(wIdx > -1) S.wallets[wIdx].balance = parseFloat(S.wallets[wIdx].balance) - amount;
+                    if (wIdx > -1) S.wallets[wIdx].balance = parseFloat(S.wallets[wIdx].balance) - amount;
                     D.utils.applyFilter();
                     U.toast('Disimpan!');
 
@@ -634,7 +641,7 @@
                         await sb.from('wallets').update({ balance: parseFloat(fw.balance) - amount }).eq('id', w.id);
                     }
                     await sb.from('transactions').insert(pl);
-                    
+
                     // Lakukan fetch diam-diam untuk memastikan konsistensi ID
                     D.data.fetchRemote();
 
@@ -647,8 +654,10 @@
         saveTemplate: async () => {
             const name = U.id('tpl-name').value;
             const amount = parseInt(U.id('tpl-amount').value);
+            const startDate = U.id('tpl-start')?.value || new Date().toISOString().slice(0, 10);
+            const duration = parseInt(U.id('tpl-duration')?.value || '30');
             if (!name || !amount) return U.toast('Data tidak lengkap');
-            const pl = { name, "limit": amount, user_id: S.user.id };
+            const pl = { name, 'limit': amount, start_date: startDate, duration_days: duration, user_id: S.user.id };
             try {
                 await sb.from('budget_templates').insert({ ...pl, id: genId('bt') });
                 D.modals.openTemplateManager();
@@ -662,7 +671,14 @@
         useTemplate: async (tplId) => {
             const t = S.budgetTemplates.find(x => x.id === tplId);
             if (!t) return;
-            const pl = { name: t.name, "limit": t.limit, user_id: S.user.id, group_id: S.activeGroupId || null };
+            const pl = {
+                name: t.name,
+                'limit': t.limit,
+                start_date: t.start_date || new Date().toISOString().slice(0, 10),
+                duration_days: t.duration_days || 30,
+                user_id: S.user.id,
+                group_id: S.activeGroupId || null
+            };
             try {
                 await sb.from('budgets').insert({ ...pl, id: genId('b') });
                 D.modals.openTemplateManager();
@@ -682,6 +698,84 @@
             } catch (e) {
                 U.toast('Gagal hapus template');
             }
+        },
+
+        /* Save a transaction directly from a budget card — no category picker needed */
+        saveFromBudgetCard: async (budgetId, amount) => {
+            const budget = (S.budgets || []).find(b => b.id == budgetId);
+            if (!budget || !amount || amount <= 0) return U.toast('Data tidak valid');
+
+            const catId = budget.catId || (S.cats.find(c => c.type === 'expense') || {}).id;
+            const w = (S.wallets || []).find(w => w.is_main) || (S.wallets || [])[0];
+            if (!catId || !w) return U.toast('Dompet / kategori belum diatur');
+
+            const pl = {
+                id: genId('tx'),
+                amount,
+                desc: budget.name,
+                catId,
+                walletId: w.id,
+                budgetId,
+                type: 'expense',
+                date: new Date().toISOString(),
+                user_id: S.user.id,
+                group_id: S.activeGroupId || null
+            };
+
+            // Optimistic UI
+            S.txs.unshift(pl);
+            const wIdx = S.wallets.findIndex(wl => wl.id === w.id);
+            if (wIdx > -1) S.wallets[wIdx].balance = parseFloat(S.wallets[wIdx].balance) - amount;
+            D.utils.applyFilter();
+            D.render.budgets();
+            U.toast('Transaksi disimpan!');
+
+            // Background DB sync
+            try {
+                const { data: fw } = await sb.from('wallets').select('balance').eq('id', w.id).single();
+                if (fw) await sb.from('wallets').update({ balance: parseFloat(fw.balance) - amount }).eq('id', w.id);
+                await sb.from('transactions').insert(pl);
+                if (budgetId) setTimeout(() => D.data.checkBudgetAlert(budgetId), 400);
+            } catch (e) {
+                U.toast('Gagal sync — coba lagi');
+                D.data.fetchRemote();
+            }
+        },
+
+        /* Convert selected budget IDs into templates (bulk action) */
+        bulkMakeTemplate: async () => {
+            const ids = Array.from(S.selectedBudgetIds || []);
+            if (!ids.length) return U.toast('Pilih budget terlebih dahulu');
+
+            U.confirmDialog(
+                'Jadikan Template?',
+                `${ids.length} budget akan disimpan sebagai template.`,
+                async () => {
+                    try {
+                        const toInsert = ids.map(bid => {
+                            const b = (S.budgets || []).find(x => x.id == bid);
+                            if (!b) return null;
+                            return {
+                                id: genId('bt'),
+                                name: b.name,
+                                'limit': b.limit,
+                                start_date: b.start_date,
+                                duration_days: b.duration_days,
+                                user_id: S.user.id
+                            };
+                        }).filter(Boolean);
+
+                        await sb.from('budget_templates').insert(toInsert);
+                        S.selectedBudgetIds = new Set();
+                        D.render.budgets();
+                        D.data.fetchRemote();
+                        U.toast(`${toInsert.length} template disimpan!`);
+                    } catch (e) {
+                        U.toast('Gagal menyimpan template');
+                    }
+                },
+                'primary', 'Simpan Template'
+            );
         }
     };
 })(window.Dompetra);

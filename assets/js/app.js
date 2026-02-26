@@ -231,9 +231,17 @@
                     D.pad.set(b.limit);
                     U.id('tx-desc').value = b.name;
                     U.id('tx-title').innerText = 'Edit Budget';
-                    U.id('budget-start').value = new Date().toISOString().slice(0, 10);
+                    /* FIX: load dates from DB record, NOT default to today */
+                    const budgetStart = U.id('budget-start');
+                    const budgetDur = U.id('budget-duration');
+                    if (budgetStart) budgetStart.value = b.start_date ? b.start_date.slice(0, 10) : new Date().toISOString().slice(0, 10);
+                    if (budgetDur) budgetDur.value = b.duration_days || 30;
+                    /* Load budget catId into hidden field */
+                    const budgetCatEl = U.id('budget-cat-id');
+                    if (budgetCatEl) budgetCatEl.value = b.catId || '';
                     U.calcEndDate();
                 }
+
             } else if (type === 'goal') {
                 const g = S.goals.find(x => x.id == id);
                 if (g) {
@@ -439,6 +447,42 @@
             U.closeAll();
             const modal = document.getElementById('modalJoinGroup');
             if (modal) modal.classList.add('open');
+        },
+
+        /* Open TX modal from budget card — auto-fills category, skips picker */
+        openRecordFromBudget: (budgetId) => {
+            const b = (S.budgets || []).find(x => x.id == budgetId);
+            if (!b) return;
+
+            const catId = b.catId || (S.cats.find(c => c.type === 'expense') || {}).id;
+
+            U.id('tx-id').value = '';
+            U.id('tx-mode').value = 'tx';
+            U.id('tx-cat-id').value = catId || '';
+            U.id('tx-budget-id').value = budgetId;
+            U.id('tx-desc').value = b.name;
+            U.id('tx-title').innerText = 'Catat ke ' + b.name;
+
+            // Show date, hide mode tabs \u2014 it's always expense for a budget
+            const dateEl = U.id('tx-date');
+            if (dateEl) dateEl.value = new Date().toISOString().slice(0, 10);
+
+            // Pre-select default wallet
+            U.renderWalletSelector(null);
+            U.refreshBudgetDropdown(budgetId);
+
+            // Show numpad
+            D.pad.set(0);
+            D.pad.render();
+
+            setTimeout(() => {
+                const txModal = document.getElementById('modalTx');
+                if (txModal) txModal.classList.add('open');
+                setTimeout(() => {
+                    const nd = document.getElementById('num-display');
+                    if (nd) nd.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 320);
+            }, 50);
         }
     };
 
@@ -671,47 +715,68 @@
 
         budgets: () => {
             const el = U.id('budget-list'); if (!el) return;
-            const bs = (S.budgets || []).filter(b => S.filter.budgetActiveOnly ? b.is_active !== false : true);
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+
+            /* --- Helper: compute expiry date from start + duration --- */
+            const getExpiry = (b) => {
+                if (!b.start_date) return null;
+                const d = new Date(b.start_date);
+                d.setDate(d.getDate() + (parseInt(b.duration_days) || 30));
+                return d;
+            };
+            const isExpired = (b) => {
+                const exp = getExpiry(b);
+                return exp ? today > exp : false;
+            };
+
+            /* --- Pipeline: filter by status + search --- */
+            const bf = S.budgetFilter || { status: 'active', search: '' };
+            const q = (bf.search || '').toLowerCase().trim();
+
+            let bs = (S.budgets || []).filter(b => {
+                const exp = isExpired(b);
+                if (bf.status === 'active' && exp) return false;
+                if (bf.status === 'expired' && !exp) return false;
+                if (q && !(b.name || '').toLowerCase().includes(q)) return false;
+                return true;
+            });
+
+            /* --- Sort: active by proximity to today first, expired last --- */
+            bs.sort((a, b) => {
+                const aExp = isExpired(a), bExp = isExpired(b);
+                if (aExp !== bExp) return aExp ? 1 : -1; // expired goes last
+                // Both active: sort by start_date closest to today
+                const aStart = a.start_date ? new Date(a.start_date) : new Date(0);
+                const bStart = b.start_date ? new Date(b.start_date) : new Date(0);
+                return Math.abs(today - aStart) - Math.abs(today - bStart);
+            });
+
+            /* --- Summary banner (global totals across all active budgets) --- */
             const summary = U.id('budget-summary-area');
-
-            const expTxs = (S.txs || []).filter(t => t.type === 'expense');
-
             if (summary) {
+                const activeBudgets = (S.budgets || []).filter(b => !isExpired(b));
                 let tLimit = 0, tUsed = 0;
-                for (let i = 0; i < bs.length; i++) {
-                    const b = bs[i];
-                    tLimit += parseFloat(b.limit);
-                    for (let j = 0; j < expTxs.length; j++) {
-                        if (expTxs[j].budgetId == b.id) tUsed += parseFloat(expTxs[j].amount);
+                const expTxsAll = (S.txs || []).filter(t => t.type === 'expense');
+                for (let i = 0; i < activeBudgets.length; i++) {
+                    tLimit += parseFloat(activeBudgets[i].limit) || 0;
+                    for (let j = 0; j < expTxsAll.length; j++) {
+                        if (expTxsAll[j].budgetId == activeBudgets[i].id) tUsed += parseFloat(expTxsAll[j].amount) || 0;
                     }
                 }
-
                 const tRem = tLimit - tUsed;
                 const pct = tLimit > 0 ? Math.round((tUsed / tLimit) * 100) : 0;
-
                 summary.innerHTML = `
                 <div class="card-summary-banner" style="background:var(--fin-grad-main); color:white;">
-                    <div style="font-size:12px; font-weight:800; opacity:0.9; margin-bottom:16px; letter-spacing:1px; text-transform:uppercase;">Ringkasan Anggaran</div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; text-align:center;">
-                        <div>
-                            <div style="font-size:11px; font-weight:600; opacity:0.8;">Batas Total</div>
-                            <div style="font-weight:800; font-size:15px; margin-top:6px;">${U.fmtMoney(tLimit)}</div>
-                        </div>
-                        <div>
-                            <div style="font-size:11px; font-weight:600; opacity:0.8;">Terpakai</div>
-                            <div style="font-weight:800; font-size:15px; margin-top:6px; color:#FFD60A;">${U.fmtMoney(tUsed)}</div>
-                        </div>
-                        <div>
-                            <div style="font-size:11px; font-weight:600; opacity:0.8;">Sisa Dana</div>
-                            <div style="font-weight:800; font-size:15px; margin-top:6px; color:#30D158;">${U.fmtMoney(tRem)}</div>
-                        </div>
+                    <div style="font-size:12px; font-weight:800; opacity:0.9; margin-bottom:16px; letter-spacing:1px; text-transform:uppercase;">Ringkasan Anggaran Aktif</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; text-align:center;">
+                        <div><div style="font-size:11px; opacity:0.8;">Batas</div><div style="font-weight:800; font-size:15px; margin-top:6px;">${U.fmtMoney(tLimit)}</div></div>
+                        <div><div style="font-size:11px; opacity:0.8;">Terpakai</div><div style="font-weight:800; font-size:15px; margin-top:6px; color:#FFD60A;">${U.fmtMoney(tUsed)}</div></div>
+                        <div><div style="font-size:11px; opacity:0.8;">Sisa</div><div style="font-weight:800; font-size:15px; margin-top:6px; color:#30D158;">${U.fmtMoney(tRem)}</div></div>
                     </div>
-                    <div style="margin-top:24px;">
-                        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:8px; font-weight:800;">
-                            <span>Penggunaan Global</span><span>${pct}%</span>
-                        </div>
-                        <div class="sb-bar-bg" style="background:rgba(255,255,255,0.2); height:12px; border-radius:99px; overflow:hidden;">
-                            <div class="sb-bar-fill" style="width:${Math.min(100, pct)}%; background:${pct > 100 ? '#FF3B30' : (pct > 80 ? '#FF9500' : '#34C759')}; height:100%; border-radius:99px; transition:width 0.5s var(--ios-spring);"></div>
+                    <div style="margin-top:20px;">
+                        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:8px; font-weight:800;"><span>Penggunaan Global</span><span>${pct}%</span></div>
+                        <div class="sb-bar-bg" style="background:rgba(255,255,255,0.2); height:10px; border-radius:99px; overflow:hidden;">
+                            <div class="sb-bar-fill" style="width:${Math.min(100, pct)}%; background:${pct > 100 ? '#FF3B30' : (pct > 80 ? '#FF9500' : '#34C759')}; height:100%; border-radius:99px;"></div>
                         </div>
                     </div>
                 </div>`;
@@ -721,37 +786,91 @@
                 el.innerHTML = `
                 <div class="empty-state-box">
                     <i class="ph-duotone ph-chart-pie-slice empty-icon"></i>
-                    <div class="empty-title">Belum Ada Budget</div>
-                    <div class="empty-desc">Mulai batasi pengeluaranmu bulan ini.</div>
-                    <button class="num-btn primary" style="margin:20px auto 0; padding:0 24px; font-size:14px; height:48px;" onclick="Dompetra.modals.openPicker('budget')">Buat Anggaran</button>
+                    <div class="empty-title">${q ? 'Tidak Ditemukan' : 'Belum Ada Budget'}</div>
+                    <div class="empty-desc">${q ? 'Coba ubah kata kunci pencarian.' : 'Mulai batasi pengeluaranmu bulan ini.'}</div>
+                    ${!q ? `<button class="num-btn primary" style="margin:20px auto 0; padding:0 24px; font-size:14px; height:48px;" onclick="Dompetra.modals.openPicker('budget')">Buat Anggaran</button>` : ''}
                 </div>`;
                 return;
             }
 
+            const expTxs = (S.txs || []).filter(t => t.type === 'expense');
             const htmlArr = [];
+
             for (let i = 0; i < bs.length; i++) {
                 const b = bs[i];
+                const expired = isExpired(b);
+                const expiry = getExpiry(b);
+
+                /* Per-card used amount */
                 let used = 0;
+                let txCount = 0;
                 for (let j = 0; j < expTxs.length; j++) {
-                    if (expTxs[j].budgetId == b.id) used += parseFloat(expTxs[j].amount);
+                    if (expTxs[j].budgetId == b.id) { used += parseFloat(expTxs[j].amount) || 0; txCount++; }
                 }
-                const pct = Math.min(100, Math.round((used / b.limit) * 100));
+                const remaining = (parseFloat(b.limit) || 0) - used;
+                const pct = b.limit > 0 ? Math.min(100, Math.round((used / b.limit) * 100)) : 0;
                 const clr = pct > 100 ? 'var(--fin-danger)' : pct > 80 ? 'var(--fin-warning)' : 'var(--fin-primary)';
 
+                /* Date range label */
+                const startLabel = b.start_date
+                    ? new Date(b.start_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+                    : '—';
+                const endLabel = expiry
+                    ? expiry.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+                    : '—';
+
+                /* Category badge */
+                const cat = b.catId ? (S.cats || []).find(c => c.id == b.catId) : null;
+                const catBadge = cat
+                    ? `<span style="background:var(--fin-primary-soft); color:var(--fin-primary); font-size:10px; font-weight:800; padding:3px 10px; border-radius:8px;"><i class="ph-bold ph-${cat.icon || 'coins'}" style="font-size:10px;"></i> ${cat.name}</span>`
+                    : '';
+
+                /* Expired styling */
+                const cardOpacity = expired ? 'opacity:0.55;' : '';
+                const nameStyle = expired ? 'text-decoration:line-through; color:var(--fin-text-muted);' : 'color:var(--fin-text-dark);';
+
+                /* Bulk select state */
+                const isSelBudget = (S.selectedBudgetIds || new Set()).has(b.id);
+
                 htmlArr.push(`
-                <div class="card-expanded liquid-glass" style="padding:24px; margin-bottom:16px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                        <div style="font-weight:800; font-size:16px; color:var(--fin-text-dark);">${b.name}</div>
-                        <div style="font-size:15px; font-weight:800; color:${clr};">${pct}%</div>
+                <div class="card-expanded liquid-glass budget-card" style="padding:20px; margin-bottom:14px; ${cardOpacity} position:relative;" id="bcard-${b.id}">
+                    ${expired ? `<div style="position:absolute; top:14px; right:14px; background:var(--fin-danger-soft); color:var(--fin-danger); font-size:10px; font-weight:800; padding:3px 10px; border-radius:8px;">Kadaluarsa</div>` : ''}
+                    <div style="display:flex; align-items:flex-start; gap:12px; margin-bottom:12px;">
+                        <div style="flex:1;">
+                            <div style="font-weight:800; font-size:16px; margin-bottom:4px; ${nameStyle}">${b.name}</div>
+                            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                <span style="font-size:11px; color:var(--fin-text-muted); font-weight:600; display:flex; align-items:center; gap:4px;">
+                                    <i class="ph-bold ph-calendar-blank" style="font-size:11px;"></i>${startLabel} → ${endLabel}
+                                </span>
+                                ${catBadge}
+                            </div>
+                        </div>
+                        <div style="text-align:right; flex-shrink:0;">
+                            <div style="font-size:22px; font-weight:800; color:${clr};">${pct}%</div>
+                        </div>
                     </div>
-                    <div class="sb-bar-bg" style="height:10px; background:var(--fin-border); border-radius:99px; overflow:hidden;">
-                        <div class="sb-bar-fill" style="width:${pct}%; background:${clr}; height:100%; border-radius:99px; transition:width 0.5s var(--ios-spring);"></div>
+                    <div class="sb-bar-bg" style="height:8px; background:var(--fin-border); border-radius:99px; overflow:hidden; margin-bottom:12px;">
+                        <div class="sb-bar-fill" style="width:${pct}%; background:${clr}; height:100%; border-radius:99px; transition:width 0.5s;"></div>
                     </div>
-                    <div style="font-size:13px; color:var(--fin-text-muted); font-weight:600; margin-top:12px;">Terpakai Rp ${U.fmtMoney(used)} dari Rp ${U.fmtMoney(b.limit)}</div>
-                    <div class="budget-actions" style="display:flex; gap:10px; margin-top:20px; border-top:1px dashed var(--fin-border); padding-top:20px;">
-                        <button class="num-btn primary" style="flex:1; height:44px; font-size:13px;" onclick="Dompetra.modals.openPicker('tx','expense','${b.id}')">Catat</button>
-                        <button class="num-btn" style="flex:1; height:44px; font-size:13px;" onclick="Dompetra.nav.filterByBudget('${b.id}')">Riwayat</button>
-                        <button class="num-btn" style="flex:1; height:44px; font-size:13px;" onclick="Dompetra.modals.editItem('${b.id}','budget')">Edit</button>
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:16px; text-align:center;">
+                        <div style="background:var(--fin-bg-base); border-radius:12px; padding:10px 6px;">
+                            <div style="font-size:10px; color:var(--fin-text-muted); font-weight:700; margin-bottom:4px;">Limit</div>
+                            <div style="font-size:13px; font-weight:800; color:var(--fin-text-dark);">${U.fmtMoney(b.limit)}</div>
+                        </div>
+                        <div style="background:var(--fin-bg-base); border-radius:12px; padding:10px 6px;">
+                            <div style="font-size:10px; color:var(--fin-text-muted); font-weight:700; margin-bottom:4px;">${txCount} Transaksi</div>
+                            <div style="font-size:13px; font-weight:800; color:var(--fin-danger);">${U.fmtMoney(used)}</div>
+                        </div>
+                        <div style="background:var(--fin-bg-base); border-radius:12px; padding:10px 6px;">
+                            <div style="font-size:10px; color:var(--fin-text-muted); font-weight:700; margin-bottom:4px;">Sisa</div>
+                            <div style="font-size:13px; font-weight:800; color:${remaining >= 0 ? 'var(--fin-success)' : 'var(--fin-danger)'};">${remaining < 0 ? '-' : ''}${U.fmtMoney(Math.abs(remaining))}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        ${!expired ? `<button class="num-btn primary" style="flex:2; height:40px; font-size:13px;" onclick="Dompetra.modals.openRecordFromBudget('${b.id}')">+ Catat</button>` : ''}
+                        <button class="num-btn" style="flex:1; height:40px; font-size:13px;" onclick="Dompetra.nav.filterByBudget('${b.id}')">Riwayat</button>
+                        <button class="num-btn" style="flex:1; height:40px; font-size:13px;" onclick="Dompetra.modals.editItem('${b.id}','budget')">Edit</button>
+                        <button class="num-btn ${isSelBudget ? 'primary' : ''}" style="height:40px; width:40px; font-size:16px;" title="Jadikan Template" onclick="Dompetra.utils.toggleBudgetSelect('${b.id}')"><i class="ph-bold ph-bookmark${isSelBudget ? '-simple' : ''}"></i></button>
                     </div>
                 </div>`);
             }
