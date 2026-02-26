@@ -499,8 +499,26 @@
             else if (p === 'categories') D.render.categories();
             else if (p === 'wallets') D.render.wallets();
             else if (p === 'export') {
-                const el = U.id('exp-period-label');
-                if (el) el.innerText = S.filterLabel;
+                /* Sync period label */
+                const elPeriod = U.id('exp-period-label');
+                if (elPeriod) elPeriod.innerText = S.filterLabel || '—';
+
+                /* Compute accumulation from filteredTxs — respects active date filter */
+                const expTxs = S.filteredTxs || [];
+                let inc = 0, exp = 0;
+                for (let i = 0; i < expTxs.length; i++) {
+                    const amt = parseFloat(expTxs[i].amount) || 0;
+                    if (expTxs[i].type === 'income') inc += amt;
+                    else exp += amt;
+                }
+                const net = inc - exp;
+                const elIn = U.id('exp-in'); if (elIn) elIn.innerText = 'Rp ' + U.fmtMoney(inc);
+                const elOut = U.id('exp-out'); if (elOut) elOut.innerText = 'Rp ' + U.fmtMoney(exp);
+                const elNet = U.id('exp-net');
+                if (elNet) {
+                    elNet.innerText = (net >= 0 ? '+' : '-') + ' Rp ' + U.fmtMoney(Math.abs(net));
+                    elNet.style.color = net >= 0 ? 'var(--fin-success)' : 'var(--fin-danger)';
+                }
             }
             else if (p === 'shared') D.render.shared();
         },
@@ -1159,6 +1177,193 @@
             if (l) {
                 l.innerText = "Filter: Spesifik Budget";
             }
+        }
+    };
+
+    // ========================================================================
+    // 5.5 MODULE: EXPORT (Excel & PDF)
+    // ========================================================================
+    D.export = {
+        /* Helper: build structured rows from filteredTxs */
+        _rows: () => {
+            const txs = S.filteredTxs || [];
+            return txs.map(t => {
+                const w = (S.wallets || []).find(x => x.id == t.walletId);
+                const c = (S.cats || []).find(x => x.id == t.catId);
+                const b = t.budgetId ? (S.budgets || []).find(x => x.id == t.budgetId) : null;
+                return {
+                    tanggal: t.date ? new Date(t.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '—',
+                    catatan: t.desc || '—',
+                    dompet: w ? w.name : '—',
+                    kategori: c ? c.name : '—',
+                    tipe: t.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
+                    nominal: parseFloat(t.amount) || 0,
+                    budget: b ? b.name : 'Non-Budget'
+                };
+            });
+        },
+
+        /* ---- EXCEL EXPORT ---- */
+        excel: () => {
+            if (typeof XLSX === 'undefined') return U.toast('Library Excel belum siap, coba lagi.');
+
+            const rows = D.export._rows();
+            const period = S.filterLabel || 'Semua Periode';
+
+            /* Compute summary */
+            let inc = 0, exp = 0;
+            rows.forEach(r => { if (r.tipe === 'Pemasukan') inc += r.nominal; else exp += r.nominal; });
+
+            /* Build worksheet data */
+            const wsData = [
+                ['Laporan Keuangan Dompetra'],
+                ['Periode: ' + period],
+                [],
+                ['Tanggal', 'Catatan', 'Dompet', 'Kategori', 'Tipe', 'Nominal (Rp)', 'Budget']
+            ];
+
+            rows.forEach(r => wsData.push([
+                r.tanggal, r.catatan, r.dompet, r.kategori, r.tipe, r.nominal, r.budget
+            ]));
+
+            /* Summary rows */
+            wsData.push([]);
+            wsData.push(['', '', '', '', 'Total Pemasukan', inc, '']);
+            wsData.push(['', '', '', '', 'Total Pengeluaran', exp, '']);
+            wsData.push(['', '', '', '', 'Arus Kas Bersih', inc - exp, '']);
+
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+            /* Column widths */
+            ws['!cols'] = [{ wch: 14 }, { wch: 30 }, { wch: 16 }, { wch: 16 }, { wch: 14 }, { wch: 18 }, { wch: 20 }];
+
+            /* Freeze header row (row 4 = header) */
+            ws['!freeze'] = { xSplit: 0, ySplit: 4, topLeftCell: 'A5' };
+
+            /* Style: bold header row (row index 3) */
+            const headerRow = 3;
+            ['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach(col => {
+                const cellRef = col + (headerRow + 1);
+                if (!ws[cellRef]) return;
+                ws[cellRef].s = {
+                    font: { bold: true, color: { rgb: '1A1A2E' } },
+                    fill: { fgColor: { rgb: 'DBEAFE' } },
+                    alignment: { horizontal: 'center' }
+                };
+            });
+
+            /* Number format for nominal column (F) */
+            const nominalColIdx = 5;
+            for (let i = 4; i < wsData.length; i++) {
+                const cellRef = 'F' + (i + 1);
+                if (ws[cellRef] && typeof ws[cellRef].v === 'number') {
+                    ws[cellRef].z = '#,##0';
+                }
+            }
+
+            /* Title row style */
+            if (ws['A1']) ws['A1'].s = { font: { bold: true, sz: 14 } };
+
+            /* Create workbook */
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Transaksi');
+
+            const fileName = 'Dompetra_' + period.replace(/[^a-zA-Z0-9]/g, '_') + '.xlsx';
+            XLSX.writeFile(wb, fileName);
+            U.toast('Excel berhasil diunduh!');
+        },
+
+        /* ---- PDF EXPORT ---- */
+        pdf: () => {
+            const jsPDFLib = window.jspdf && window.jspdf.jsPDF ? window.jspdf.jsPDF : (typeof jsPDF !== 'undefined' ? jsPDF : null);
+            if (!jsPDFLib) return U.toast('Library PDF belum siap, coba lagi.');
+
+            const rows = D.export._rows();
+            const period = S.filterLabel || 'Semua Periode';
+
+            let inc = 0, exp = 0;
+            rows.forEach(r => { if (r.tipe === 'Pemasukan') inc += r.nominal; else exp += r.nominal; });
+
+            const doc = new jsPDFLib({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+            /* ---- Header ---- */
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(18);
+            doc.setTextColor(30, 30, 60);
+            doc.text('Laporan Keuangan', 14, 20);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 120);
+            doc.text('Dompetra — ' + period, 14, 28);
+
+            /* ---- Summary band ---- */
+            doc.setFillColor(235, 242, 255);
+            doc.roundedRect(14, 33, 182, 22, 3, 3, 'F');
+            doc.setFontSize(9);
+            doc.setTextColor(50, 50, 80);
+            const fmtRp = (n) => 'Rp ' + n.toLocaleString('id-ID');
+            doc.setFont('helvetica', 'bold');
+            doc.text('Pemasukan', 22, 41); doc.setFont('helvetica', 'normal'); doc.text(fmtRp(inc), 22, 47);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Pengeluaran', 82, 41); doc.setFont('helvetica', 'normal'); doc.text(fmtRp(exp), 82, 47);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Arus Kas Bersih', 142, 41);
+            const net = inc - exp;
+            doc.setTextColor(net >= 0 ? 22 : 200, net >= 0 ? 163 : 50, net >= 0 ? 74 : 50);
+            doc.setFont('helvetica', 'bold'); doc.text(fmtRp(net), 142, 47);
+
+            /* ---- Table ---- */
+            const tableRows = rows.map(r => [
+                r.tanggal,
+                r.catatan.length > 28 ? r.catatan.slice(0, 26) + '…' : r.catatan,
+                r.dompet,
+                r.kategori,
+                r.tipe,
+                fmtRp(r.nominal)
+            ]);
+
+            doc.autoTable({
+                startY: 60,
+                head: [['Tanggal', 'Catatan', 'Dompet', 'Kategori', 'Tipe', 'Nominal']],
+                body: tableRows,
+                styles: {
+                    font: 'helvetica',
+                    fontSize: 8,
+                    cellPadding: 3,
+                    valign: 'middle'
+                },
+                headStyles: {
+                    fillColor: [30, 80, 200],
+                    textColor: 255,
+                    fontStyle: 'bold',
+                    halign: 'center'
+                },
+                alternateRowStyles: { fillColor: [245, 247, 255] },
+                columnStyles: {
+                    0: { cellWidth: 22 },
+                    1: { cellWidth: 48 },
+                    2: { cellWidth: 26 },
+                    3: { cellWidth: 26 },
+                    4: { cellWidth: 22 },
+                    5: { cellWidth: 30, halign: 'right' }
+                },
+                margin: { left: 14, right: 14 },
+                didDrawPage: (data) => {
+                    /* Footer on every page */
+                    doc.setFontSize(7);
+                    doc.setTextColor(160);
+                    doc.text(
+                        'Dompetra — ' + period + '  |  Hal ' + doc.internal.getNumberOfPages(),
+                        14,
+                        doc.internal.pageSize.height - 8
+                    );
+                }
+            });
+
+            const fileName = 'Dompetra_' + period.replace(/[^a-zA-Z0-9]/g, '_') + '.pdf';
+            doc.save(fileName);
+            U.toast('PDF berhasil diunduh!');
         }
     };
 
