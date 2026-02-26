@@ -178,8 +178,8 @@ Object.assign(D.utils, {
         });
     },
 
-    populateIconSelect: (selectedIcon) => {
-        const sel = document.getElementById('cat-icon'); if (!sel) return;
+    populateIconSelect: (selectedIcon, targetId = 'cat-icon') => {
+        const sel = document.getElementById(targetId); if (!sel) return;
         let html = '';
         Object.keys(ICON_LIBRARY).forEach(k => {
             html += `<optgroup label="${k}">` + ICON_LIBRARY[k].map(i => `<option value="${i}" ${i === selectedIcon ? 'selected' : ''}>${i}</option>`).join('') + `</optgroup>`;

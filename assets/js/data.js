@@ -501,6 +501,56 @@
             }
         },
 
+        /* QUICK VERSION: For nested modal use */
+        saveCatQuick: async () => {
+            const id = U.id('cat-quick-id').value;
+            const name = U.id('cat-quick-name').value;
+            const type = U.id('cat-quick-type').value;
+            const icon = U.id('cat-quick-icon').value;
+            const txMode = U.id('tx-mode').value || 'tx';
+            const currTxCatId = U.id('tx-cat-id').value;
+
+            if (!name) return U.toast('Nama wajib');
+
+            const pl = {
+                name, type, icon,
+                user_id: S.user.id,
+                color: type === 'income' ? 'bg-income' : 'bg-shop'
+            };
+
+            try {
+                if (id) {
+                    await sb.from('categories').update(pl).eq('id', id);
+                    const idx = S.cats.findIndex(c => c.id == id);
+                    if (idx > -1) S.cats[idx] = { ...S.cats[idx], ...pl };
+                } else {
+                    const newId = genId('c');
+                    const newCat = { ...pl, id: newId };
+                    S.cats.push(newCat);
+                    await sb.from('categories').insert(newCat);
+
+                    // If we just added a new cat, auto-select it if possible
+                    if (!currTxCatId || currTxCatId === 'undefined') {
+                        U.id('tx-cat-id').value = newId;
+                        U.id('tx-cat-badge').innerText = name;
+                    }
+                }
+
+                D.modals.closeCatQuick();
+
+                // Re-render strip in TX modal
+                D.modals.renderCatStrip(txMode, U.id('tx-cat-id').value);
+
+                // Also update background categories list if we are on that page
+                if (S.currentPage === 'categories') D.render.categories();
+
+                U.toast('Kategori disimpan');
+            } catch (e) {
+                console.error(e);
+                U.toast('Gagal simpan kategori');
+            }
+        },
+
         delCat: async () => {
             const id = U.id('cat-id').value;
             U.confirmDialog('Hapus Kategori?', 'Yakin?', async () => {
@@ -508,6 +558,35 @@
                 U.closeAll();
                 D.data.fetchRemote();
                 U.toast('Dihapus');
+            }, 'danger', 'Hapus');
+        },
+
+        delCatQuick: async () => {
+            const id = U.id('cat-quick-id').value;
+            const txMode = U.id('tx-mode').value || 'tx';
+
+            U.confirmDialog('Hapus Kategori?', 'Yakin?', async () => {
+                try {
+                    await sb.from('categories').delete().eq('id', id);
+                    S.cats = S.cats.filter(c => c.id != id);
+
+                    // If the deleted cat was selected, revert to first available
+                    if (U.id('tx-cat-id').value == id) {
+                        const first = S.cats.find(c => c.type === (U.id('cat-quick-type').value || 'expense')) || S.cats[0];
+                        if (first) {
+                            U.id('tx-cat-id').value = first.id;
+                            U.id('tx-cat-badge').innerText = first.name;
+                        }
+                    }
+
+                    D.modals.closeCatQuick();
+                    D.modals.renderCatStrip(txMode, U.id('tx-cat-id').value);
+                    if (S.currentPage === 'categories') D.render.categories();
+
+                    U.toast('Dihapus');
+                } catch (e) {
+                    U.toast('Gagal hapus');
+                }
             }, 'danger', 'Hapus');
         },
 

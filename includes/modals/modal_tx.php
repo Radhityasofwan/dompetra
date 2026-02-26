@@ -2,10 +2,11 @@
 <div class="modal-backdrop" id="modalTx" onclick="if(event.target === this) Dompetra.utils.closeAll()">
     <div class="sheet">
         <div class="sheet-handle"></div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
             <div style="font-size:22px; font-weight:800; letter-spacing:-0.5px;" id="tx-title">Transaksi Baru</div>
             <div id="tx-cat-badge"
-                style="background:var(--fin-primary-soft); color:var(--fin-primary); padding:6px 16px; border-radius:14px; font-size:13px; font-weight:800;">
+                style="background:var(--fin-primary-soft); color:var(--fin-primary); padding:6px 16px; border-radius:14px; font-size:13px; font-weight:800; cursor:pointer;"
+                onclick="Dompetra.modals.openCatQuick(null,'tx')">
                 Umum</div>
         </div>
 
@@ -15,6 +16,16 @@
         <input type="hidden" id="budget-cat-id">
 
         <div class="sheet-scroll">
+            <!-- Category Chip Strip -->
+            <div id="tx-cat-strip-wrap" style="margin-bottom:20px;">
+                <div
+                    style="font-size:11px; font-weight:800; color:var(--fin-text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">
+                    Kategori</div>
+                <div id="tx-cat-strip"
+                    style="display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;">
+                </div>
+            </div>
+
             <div class="numpad-display" style="text-align:center; margin-bottom:32px;">
                 <div class="numpad-val" id="num-display"
                     style="font-size: 56px; font-weight: 800; color: var(--fin-primary); letter-spacing: -2px;">0</div>
@@ -345,7 +356,8 @@
                 </div>
                 <div class="check-circle" id="chk-notif"
                     style="opacity:0; background:var(--fin-primary); color:white; border:none; transition:opacity 0.3s;">
-                    <i class="ph-bold ph-check"></i></div>
+                    <i class="ph-bold ph-check"></i>
+                </div>
             </div>
 
             <!-- Pengaturan Tema Terang / Gelap -->
@@ -456,6 +468,49 @@
                 style="margin-bottom:32px;">
             <button class="num-btn primary w-100" onclick="Dompetra.group.join()">Gabung</button>
             <div style="height: 24px;"></div> <!-- Extra Spacing -->
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CAT QUICK (Nested, over modalTx) -->
+<div id="modalCatQuick"
+    style="position:fixed; inset:0; z-index:999998; pointer-events:none; opacity:0; transition:opacity 0.2s ease;"
+    onclick="if(event.target===this) Dompetra.modals.closeCatQuick()">
+    <!-- Dim background (modalTx still visible beneath) -->
+    <div style="position:absolute; inset:0; background:rgba(0,0,0,0.4);"></div>
+    <div id="modalCatQuickSheet" class="sheet"
+        style="position:absolute; bottom:0; left:0; right:0; transform:translateY(100%); transition:transform 0.28s cubic-bezier(0.4,0,0.2,1); z-index:1; border-radius:28px 28px 0 0;">
+        <div class="sheet-handle"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+            <div style="font-size:20px; font-weight:800;" id="cat-quick-title">Kelola Kategori</div>
+            <button onclick="Dompetra.modals.closeCatQuick()"
+                style="background:var(--fin-bg-base); border:1px solid var(--fin-border); border-radius:12px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:18px; cursor:pointer;"><i
+                    class="ph-bold ph-x"></i></button>
+        </div>
+        <div class="sheet-scroll">
+            <input type="hidden" id="cat-quick-id">
+            <input type="hidden" id="cat-quick-mode">
+
+            <label style="font-size:13px; font-weight:700; margin-bottom:10px; display:block;">Nama Kategori</label>
+            <input type="text" id="cat-quick-name" class="inp-std w-100" placeholder="Misal: Makan, Transport"
+                style="margin-bottom:20px;">
+
+            <label style="font-size:13px; font-weight:700; margin-bottom:10px; display:block;">Tipe</label>
+            <select id="cat-quick-type" class="inp-std w-100" style="margin-bottom:20px;">
+                <option value="expense">Pengeluaran</option>
+                <option value="income">Pemasukan</option>
+            </select>
+
+            <label style="font-size:13px; font-weight:700; margin-bottom:10px; display:block;">Ikon</label>
+            <select id="cat-quick-icon" class="inp-std w-100" style="margin-bottom:28px;"></select>
+
+            <div style="display:flex; gap:12px;">
+                <button class="num-btn" id="cat-quick-del-btn"
+                    style="flex:1; color:var(--fin-danger); border-color:var(--fin-danger); display:none;"
+                    onclick="Dompetra.data.delCatQuick()">Hapus</button>
+                <button class="num-btn primary" style="flex:2;" onclick="Dompetra.data.saveCatQuick()">Simpan</button>
+            </div>
+            <div style="height:24px;"></div>
         </div>
     </div>
 </div>

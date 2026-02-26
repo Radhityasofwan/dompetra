@@ -109,7 +109,14 @@
                 if (cats.length > 0) {
                     grid.innerHTML = cats.map(c => `
                         <div class="col-3 d-flex flex-column align-items-center mb-2">
-                            <div class="cat-pick-item w-100 text-center" onclick="Dompetra.modals.selectCat('${c.id}','${mode}')" style="cursor:pointer;">
+                            <div class="cat-pick-item w-100 text-center" 
+                                 onclick="Dompetra.modals.selectCat('${c.id}','${mode}')" 
+                                 onmousedown="Dompetra.modals.handleLongPress(event, '${c.id}', '${mode}')"
+                                 onmouseup="Dompetra.modals.clearLongPress()"
+                                 onmouseleave="Dompetra.modals.clearLongPress()"
+                                 ontouchstart="Dompetra.modals.handleLongPress(event, '${c.id}', '${mode}')"
+                                 ontouchend="Dompetra.modals.clearLongPress()"
+                                 style="cursor:pointer;">
                                 <div class="cat-pick-icon mx-auto mb-2" style="width:60px; height:60px; border-radius:22px; background:var(--fin-glass-bg); display:flex; align-items:center; justify-content:center; font-size:28px; color:var(--fin-text-dark); border:1px solid var(--fin-glass-border); box-shadow:var(--fin-shadow-glass); transition:transform 0.1s var(--ios-ease);">
                                     <i class="ph-bold ph-${c.icon || 'coins'}"></i>
                                 </div>
@@ -118,7 +125,16 @@
                                 </div>
                             </div>
                         </div>
-                    `).join('');
+                    `).join('') + `
+                        <div class="col-3 d-flex flex-column align-items-center mb-2">
+                            <div class="cat-pick-item w-100 text-center" onclick="Dompetra.modals.openCatQuick(null, '${mode}')" style="cursor:pointer;">
+                                <div class="cat-pick-icon mx-auto mb-2" style="width:60px; height:60px; border-radius:22px; background:var(--fin-primary-soft); display:flex; align-items:center; justify-content:center; font-size:28px; color:var(--fin-primary); border:1.5px dashed var(--fin-primary); transition:transform 0.1s var(--ios-ease);">
+                                    <i class="ph-bold ph-plus"></i>
+                                </div>
+                                <div class="cat-pick-label" style="font-size:11px; font-weight:700; color:var(--fin-primary);">Tambah</div>
+                            </div>
+                        </div>
+                    `;
                 } else {
                     grid.innerHTML = '<div class="col-12 text-center text-muted" style="font-size:12px; padding:20px;">Belum ada kategori</div>';
                 }
@@ -138,7 +154,7 @@
                 D.pad.clear();
             }
 
-            const cat = S.cats.find(c => c.id == catId) || { name: 'Umum' };
+            const cat = (S.cats || []).find(c => c.id == catId) || { name: 'Umum' };
             U.id('tx-title').innerText = mode === 'budget' ? 'Buat Budget' : mode === 'goal' ? 'Buat Goal' : 'Transaksi Baru';
             U.id('tx-cat-badge').innerText = mode === 'budget' ? 'Budget' : mode === 'goal' ? 'Impian' : cat.name;
             U.id('tx-desc').value = '';
@@ -152,7 +168,8 @@
                 'tx-desc': true,
                 'tx-date': !isBud,
                 'btn-del-tx-col': false,
-                'tx-wallet-wrapper': mode === 'tx'
+                'tx-wallet-wrapper': mode === 'tx',
+                'tx-cat-strip-wrap': mode !== 'goal' // Strip visible for TX and Budget
             };
 
             Object.keys(els).forEach(k => {
@@ -165,6 +182,9 @@
                     }
                 }
             });
+
+            /* Render the Category Strip */
+            if (mode !== 'goal') D.modals.renderCatStrip(mode, catId);
 
             if (isBud) U.calcEndDate();
             if (mode === 'tx') {
@@ -181,6 +201,99 @@
                     if (nd) nd.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }, 320);
             }, 50);
+        },
+
+        /* Renders scrollable chips in tx modal */
+        renderCatStrip: (mode, currentCatId) => {
+            const el = U.id('tx-cat-strip'); if (!el) return;
+            // Get all cats if mode is tx, otherwise maybe restricted
+            const typeFilter = mode === 'budget' || mode === 'tx' ? '' : (mode === 'income' ? 'income' : 'expense');
+            const cats = (S.cats || []).filter(c => typeFilter ? c.type === typeFilter : true);
+
+            let html = cats.map(c => {
+                const isSel = c.id == currentCatId;
+                return `
+                    <div class="cat-chip ${isSel ? 'selected' : ''}" 
+                         onclick="Dompetra.modals.selectCatInline('${c.id}')"
+                         onmousedown="Dompetra.modals.handleLongPress(event, '${c.id}', '${mode}')"
+                         onmouseup="Dompetra.modals.clearLongPress()"
+                         onmouseleave="Dompetra.modals.clearLongPress()"
+                         ontouchstart="Dompetra.modals.handleLongPress(event, '${c.id}', '${mode}')"
+                         ontouchend="Dompetra.modals.clearLongPress()">
+                        <i class="ph-bold ph-${c.icon || 'coins'}"></i>
+                        ${c.name}
+                    </div>
+                `;
+            }).join('');
+
+            // Add "+" button
+            html += `
+                <div class="cat-chip add-cat" onclick="Dompetra.modals.openCatQuick(null, '${mode}')">
+                    <i class="ph-bold ph-plus"></i> Tambah
+                </div>
+            `;
+            el.innerHTML = html;
+        },
+
+        /* Changes cat without closing the main modal */
+        selectCatInline: (catId) => {
+            const mode = U.id('tx-mode').value;
+            const cat = S.cats.find(c => c.id == catId);
+            if (!cat) return;
+
+            U.id('tx-cat-id').value = catId;
+            U.id('tx-cat-badge').innerText = cat.name;
+
+            // Re-render strip to update highlight
+            D.modals.renderCatStrip(mode, catId);
+
+            // If it's a TX, we might need to refresh budget list if budget list is cat-specific
+            // (Current implementation doesn't seem to enforce that yet, but good for future)
+        },
+
+        /* Long press timer */
+        longPressTimer: null,
+        handleLongPress: (e, id, mode) => {
+            D.modals.clearLongPress();
+            D.modals.longPressTimer = setTimeout(() => {
+                window.navigator.vibrate?.(40);
+                D.modals.openCatQuick(id, mode);
+            }, 600);
+        },
+        clearLongPress: () => {
+            if (D.modals.longPressTimer) clearTimeout(D.modals.longPressTimer);
+            D.modals.longPressTimer = null;
+        },
+
+        /* NESTED MODAL: Category Quick Manage */
+        openCatQuick: (id, mode) => {
+            const overlay = document.getElementById('modalCatQuick');
+            if (!overlay) return;
+
+            U.id('cat-quick-id').value = id || '';
+            U.id('cat-quick-mode').value = mode || 'tx';
+
+            if (id) {
+                const c = S.cats.find(x => x.id == id);
+                U.id('cat-quick-title').innerText = 'Edit Kategori';
+                U.id('cat-quick-name').value = c.name;
+                U.id('cat-quick-type').value = c.type;
+                U.populateIconSelect(c.icon, 'cat-quick-icon');
+                U.id('cat-quick-del-btn').style.display = 'block';
+            } else {
+                U.id('cat-quick-title').innerText = 'Tambah Kategori';
+                U.id('cat-quick-name').value = '';
+                U.id('cat-quick-type').value = 'expense';
+                U.populateIconSelect('coins', 'cat-quick-icon');
+                U.id('cat-quick-del-btn').style.display = 'none';
+            }
+
+            overlay.classList.add('open');
+        },
+
+        closeCatQuick: () => {
+            const overlay = document.getElementById('modalCatQuick');
+            if (overlay) overlay.classList.remove('open');
         },
 
         editItem: (id, type) => {

@@ -1138,6 +1138,61 @@ body {
     pointer-events: auto;
 }
 
+/* ── Category Chip Strip ── */
+#finance-app-root #tx-cat-strip::-webkit-scrollbar {
+    display: none;
+}
+
+#finance-app-root #tx-cat-strip {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+#finance-app-root .cat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    border: 1.5px solid var(--fin-border);
+    background: var(--fin-bg-base);
+    color: var(--fin-text-muted);
+    scroll-snap-align: start;
+    transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#finance-app-root .cat-chip:active {
+    transform: scale(0.94);
+}
+
+#finance-app-root .cat-chip.selected {
+    background: var(--fin-primary);
+    color: white;
+    border-color: var(--fin-primary);
+}
+
+#finance-app-root .cat-chip.add-cat {
+    background: var(--fin-primary-soft);
+    color: var(--fin-primary);
+    border-color: var(--fin-primary-soft);
+}
+
+/* ── Nested Cat Quick Modal ── */
+#finance-app-root #modalCatQuick.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#finance-app-root #modalCatQuick.open #modalCatQuickSheet {
+    transform: translateY(0);
+}
+
 
 #finance-app-root .num-btn {
     background: transparent;
