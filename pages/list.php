@@ -1,41 +1,12 @@
-<!-- Header Halaman -->
-<div class="page-header">
-    <h2>Riwayat Transaksi</h2>
-</div>
-
-<!-- Mulai Area Search & Filter -->
-<div class="search-filter-container">
-    <!-- 1.1 Search Bar -->
-    <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Cari catatan transaksi..." autocomplete="off">
-        <span class="search-icon">🔍</span>
+<div id="page-list" class="page-view">
+    <div class="page-header">
+        <h2 class="ph-title">Riwayat</h2>
+        <p class="ph-subtitle" id="list-period-disp">...</p>
     </div>
-
-    <!-- 1.3 Multi-Filter -->
-    <div class="filter-scroll-wrapper">
-        <select id="filterType" class="filter-select">
-            <option value="all">Semua Tipe</option>
-            <option value="income">Pemasukan</option>
-            <option value="expense">Pengeluaran</option>
-        </select>
-
-        <select id="filterWallet" class="filter-select">
-            <option value="all">Semua Dompet</option>
-            <!-- Option dompet akan di-generate via JS -->
-        </select>
-
-        <select id="filterCategory" class="filter-select">
-            <option value="all">Semua Kategori</option>
-            <!-- Option kategori akan di-generate via JS -->
-        </select>
+    <div style="padding:0 24px 12px; display:flex; gap:8px;">
+        <button class="btn-pill" onclick="Dompetra.utils.openFilter()" style="flex:1; background:var(--fin-card-bg); color:var(--fin-text-dark); border:1px solid var(--fin-border);"><i class="ph-bold ph-funnel"></i> Filter</button>
+        <button class="btn-pill" id="btn-toggle-select" onclick="Dompetra.utils.toggleSelectionMode()" style="background:var(--fin-card-bg); color:var(--fin-primary); border:1px solid var(--fin-primary-soft);"><i class="ph-bold ph-check-square"></i> Pilih</button>
     </div>
+    <div class="list-group" id="full-list"></div>
+    <div style="height:100px;"></div>
 </div>
-<!-- Akhir Area Search & Filter -->
-
-<!-- Container List Transaksi -->
-<div id="transactionListContainer" class="transaction-list">
-    <!-- Card transaksi akan dirender di sini oleh JavaScript -->
-</div>
-
-<!-- Pastikan memanggil script data handler di bawah -->
-<script src="assets/js/list-handler.js"></script>
