@@ -1,0 +1,371 @@
+/* ==========================================================================
+   DOMPETRA - NATIVE HEADER + LIQUID GLASS iOS 27 STYLESHEET (CLEAN & SATSET)
+   ========================================================================== */
+
+/* --- 1. VARIABLES & PALETTE (DEFAULT SAPPHIRE) --- */
+:root {
+    --fin-primary: #0F52BA; 
+    --fin-primary-dark: #0B3A82;
+    --fin-primary-soft: rgba(15, 82, 186, 0.15);
+    --fin-grad-main: linear-gradient(135deg, #0F52BA 0%, #1E90FF 100%);
+    --fin-bg-base: #F2F2F7;
+    --blob-1: rgba(15, 82, 186, 0.4);
+    --blob-2: rgba(30, 144, 255, 0.3);
+    --blob-3: rgba(135, 206, 235, 0.2);
+    
+    --fin-glass-bg: rgba(255, 255, 255, 0.75);
+    --fin-glass-border: rgba(255, 255, 255, 0.6);
+    --fin-glass-highlight: inset 0 1px 1px rgba(255, 255, 255, 0.9);
+    --fin-shadow-glass: 0 10px 30px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
+    
+    --fin-text-dark: #1C1C1E;
+    --fin-text-muted: #8E8E93;
+    --fin-border: rgba(60, 60, 67, 0.15);
+    
+    --fin-danger: #FF3B30; --fin-danger-soft: rgba(255, 59, 48, 0.12);
+    --fin-success: #34C759; --fin-success-soft: rgba(52, 199, 89, 0.12);
+    --fin-warning: #FF9500; --fin-warning-soft: rgba(255, 149, 0, 0.12);
+    
+    --fin-group-primary: #FF9500;
+    --fin-group-soft: rgba(255, 149, 0, 0.15);
+    --fin-grad-group: linear-gradient(135deg, #FF9500 0%, #FF3B30 100%);
+    
+    --safe-top: env(safe-area-inset-top, 20px); 
+    --safe-bottom: env(safe-area-inset-bottom, 20px);
+    
+    /* Standard Smooth Timings */
+    --ios-ease: cubic-bezier(0.25, 0.8, 0.25, 1);
+    --ios-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+:root[data-theme="dark"] {
+    --fin-primary: #0F52BA;
+    --fin-primary-soft: rgba(15, 82, 186, 0.25);
+    --fin-bg-base: #000000;
+    --blob-1: rgba(15, 82, 186, 0.5);
+    --blob-2: rgba(30, 144, 255, 0.4);
+    --blob-3: rgba(135, 206, 235, 0.2);
+    
+    --fin-glass-bg: rgba(28, 28, 30, 0.7);
+    --fin-glass-border: rgba(255, 255, 255, 0.12);
+    --fin-glass-highlight: inset 0 1px 1px rgba(255, 255, 255, 0.08);
+    --fin-shadow-glass: 0 10px 40px rgba(0, 0, 0, 0.5);
+    
+    --fin-text-dark: #FFFFFF;
+    --fin-text-muted: #EBEBF5;
+    --fin-border: rgba(84, 84, 88, 0.4);
+}
+
+/* --- 10 PREMIUM COLOR THEMES (PRESETS) --- */
+/* 1. Sapphire (Default) - Diset di atas pada :root */
+
+/* 2. Jade */
+:root[data-color="jade"] { --fin-primary: #00A86B; --fin-primary-dark: #007A4D; --fin-primary-soft: rgba(0, 168, 107, 0.15); --fin-grad-main: linear-gradient(135deg, #00A86B 0%, #20B2AA 100%); --blob-1: rgba(0, 168, 107, 0.4); --blob-2: rgba(32, 178, 170, 0.3); }
+:root[data-theme="dark"][data-color="jade"] { --fin-primary-soft: rgba(0, 168, 107, 0.25); --blob-1: rgba(0, 168, 107, 0.5); --blob-2: rgba(32, 178, 170, 0.4); }
+
+/* 3. Crimson */
+:root[data-color="crimson"] { --fin-primary: #DC143C; --fin-primary-dark: #A00F2C; --fin-primary-soft: rgba(220, 20, 60, 0.15); --fin-grad-main: linear-gradient(135deg, #DC143C 0%, #FF6347 100%); --blob-1: rgba(220, 20, 60, 0.4); --blob-2: rgba(255, 99, 71, 0.3); }
+:root[data-theme="dark"][data-color="crimson"] { --fin-primary-soft: rgba(220, 20, 60, 0.25); --blob-1: rgba(220, 20, 60, 0.5); --blob-2: rgba(255, 99, 71, 0.4); }
+
+/* 4. Magenta */
+:root[data-color="magenta"] { --fin-primary: #D02090; --fin-primary-dark: #8B008B; --fin-primary-soft: rgba(208, 32, 144, 0.15); --fin-grad-main: linear-gradient(135deg, #D02090 0%, #DA70D6 100%); --blob-1: rgba(208, 32, 144, 0.4); --blob-2: rgba(218, 112, 214, 0.3); }
+:root[data-theme="dark"][data-color="magenta"] { --fin-primary-soft: rgba(208, 32, 144, 0.25); --blob-1: rgba(208, 32, 144, 0.5); --blob-2: rgba(218, 112, 214, 0.4); }
+
+/* 5. Tangerine */
+:root[data-color="tangerine"] { --fin-primary: #F28500; --fin-primary-dark: #CC5500; --fin-primary-soft: rgba(242, 133, 0, 0.15); --fin-grad-main: linear-gradient(135deg, #F28500 0%, #FFA500 100%); --blob-1: rgba(242, 133, 0, 0.4); --blob-2: rgba(255, 165, 0, 0.3); }
+:root[data-theme="dark"][data-color="tangerine"] { --fin-primary-soft: rgba(242, 133, 0, 0.25); --blob-1: rgba(242, 133, 0, 0.5); --blob-2: rgba(255, 165, 0, 0.4); }
+
+/* 6. Graphite */
+:root[data-color="graphite"] { --fin-primary: #53565A; --fin-primary-dark: #36454F; --fin-primary-soft: rgba(83, 86, 90, 0.15); --fin-grad-main: linear-gradient(135deg, #53565A 0%, #778899 100%); --blob-1: rgba(83, 86, 90, 0.4); --blob-2: rgba(119, 136, 153, 0.3); }
+:root[data-theme="dark"][data-color="graphite"] { --fin-primary-soft: rgba(83, 86, 90, 0.25); --blob-1: rgba(83, 86, 90, 0.5); --blob-2: rgba(119, 136, 153, 0.4); }
+
+/* 7. Cyan */
+:root[data-color="cyan"] { --fin-primary: #00B7EB; --fin-primary-dark: #008B8B; --fin-primary-soft: rgba(0, 183, 235, 0.15); --fin-grad-main: linear-gradient(135deg, #00B7EB 0%, #87CEFA 100%); --blob-1: rgba(0, 183, 235, 0.4); --blob-2: rgba(135, 206, 250, 0.3); }
+:root[data-theme="dark"][data-color="cyan"] { --fin-primary-soft: rgba(0, 183, 235, 0.25); --blob-1: rgba(0, 183, 235, 0.5); --blob-2: rgba(135, 206, 250, 0.4); }
+
+/* 8. Lavender */
+:root[data-color="lavender"] { --fin-primary: #7B68EE; --fin-primary-dark: #483D8B; --fin-primary-soft: rgba(123, 104, 238, 0.15); --fin-grad-main: linear-gradient(135deg, #7B68EE 0%, #9370DB 100%); --blob-1: rgba(123, 104, 238, 0.4); --blob-2: rgba(147, 112, 219, 0.3); }
+:root[data-theme="dark"][data-color="lavender"] { --fin-primary-soft: rgba(123, 104, 238, 0.25); --blob-1: rgba(123, 104, 238, 0.5); --blob-2: rgba(147, 112, 219, 0.4); }
+
+/* 9. Bronze */
+:root[data-color="bronze"] { --fin-primary: #CD7F32; --fin-primary-dark: #A0522D; --fin-primary-soft: rgba(205, 127, 50, 0.15); --fin-grad-main: linear-gradient(135deg, #CD7F32 0%, #D2B48C 100%); --blob-1: rgba(205, 127, 50, 0.4); --blob-2: rgba(210, 180, 140, 0.3); }
+:root[data-theme="dark"][data-color="bronze"] { --fin-primary-soft: rgba(205, 127, 50, 0.25); --blob-1: rgba(205, 127, 50, 0.5); --blob-2: rgba(210, 180, 140, 0.4); }
+
+/* 10. Olive */
+:root[data-color="olive"] { --fin-primary: #808000; --fin-primary-dark: #556B2F; --fin-primary-soft: rgba(128, 128, 0, 0.15); --fin-grad-main: linear-gradient(135deg, #808000 0%, #BDB76B 100%); --blob-1: rgba(128, 128, 0, 0.4); --blob-2: rgba(189, 183, 107, 0.3); }
+:root[data-theme="dark"][data-color="olive"] { --fin-primary-soft: rgba(128, 128, 0, 0.25); --blob-1: rgba(128, 128, 0, 0.5); --blob-2: rgba(189, 183, 107, 0.4); }
+
+/* Group Mode Override Tetap Dominan */
+#finance-app-root.mode-group { --fin-primary: var(--fin-group-primary); --fin-primary-soft: var(--fin-group-soft); --fin-grad-main: var(--fin-grad-group); --blob-1: rgba(255, 149, 0, 0.4); --blob-2: rgba(255, 59, 48, 0.3); }
+
+/* --- 2. BASE & CLEAN MESH BACKGROUND --- */
+html { width: 100%; height: 100%; overflow: hidden; font-size: 14px; }
+body { margin: 0 !important; padding: 0 !important; width: 100%; height: 100%; background: var(--fin-bg-base); overscroll-behavior: none; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; font-size: 1rem; line-height: 1.5; -webkit-user-select: none; user-select: none; color: var(--fin-text-dark); transition: background 0.4s ease; position: fixed; inset: 0; }
+#finance-app-root { position: fixed !important; inset: 0; z-index: 99999; display: flex; justify-content: center; height: 100vh; height: 100dvh; width: 100vw; overflow: hidden; }
+#finance-app-root * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+.mesh-bg { position: absolute; inset: 0; z-index: -1; overflow: hidden; background: var(--fin-bg-base); transition: background 0.5s ease; pointer-events: none; }
+.mesh-blob { position: absolute; border-radius: 50%; animation: floatBlob 15s infinite alternate ease-in-out; opacity: 0.8; pointer-events: none; }
+.mesh-blob.b1 { top: -20%; left: -20%; width: 80vw; height: 80vw; max-width: 500px; max-height: 500px; background: radial-gradient(circle, var(--blob-1) 0%, transparent 70%); animation-delay: 0s; }
+.mesh-blob.b2 { top: 30%; right: -30%; width: 70vw; height: 70vw; max-width: 450px; max-height: 450px; background: radial-gradient(circle, var(--blob-2) 0%, transparent 70%); animation-delay: -5s; }
+.mesh-blob.b3 { bottom: -20%; left: 10%; width: 90vw; height: 90vw; max-width: 600px; max-height: 600px; background: radial-gradient(circle, var(--blob-3) 0%, transparent 70%); animation-delay: -10s; }
+
+@keyframes floatBlob { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(10%, 10%) scale(1.1); } 100% { transform: translate(-5%, 5%) scale(0.95); } }
+
+.app-frame { width: 100%; max-width: 480px; height: 100%; background: transparent; display: flex; flex-direction: column; position: relative; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.15); z-index: 1; }
+
+/* --- 3. APP LOADER & CORE UTILITIES --- */
+.loader-spinner { border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid white; border-radius: 50%; width: 44px; height: 44px; animation: spin 1s linear infinite; margin-bottom: 24px; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+#app-loader { position: absolute; inset: 0; background: var(--fin-grad-main); z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s var(--ios-ease); }
+#app-loader.hidden { opacity: 0; pointer-events: none; }
+
+/* --- 4. IOS INSTALL CAPSULE --- */
+.ios-install-capsule { position: fixed; top: calc(var(--safe-top) + 12px); left: 50%; transform: translate(-50%, -200%) scale(0.9); width: 92%; max-width: 380px; background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.25); border-radius: 99px; padding: 6px 6px 6px 10px; display: flex; align-items: center; gap: 12px; z-index: 9999999; opacity: 0; transition: all 0.6s var(--ios-spring); pointer-events: none; visibility: hidden; }
+.ios-install-capsule.show { transform: translate(-50%, 0) scale(1); opacity: 1; pointer-events: auto; visibility: visible; }
+.capsule-icon { width: 44px; height: 44px; border-radius: 50%; background: var(--fin-grad-main); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px var(--fin-primary-soft); }
+.capsule-text { flex: 1; display: flex; flex-direction: column; color: white; }
+.capsule-text strong { font-size: 13px; font-weight: 800; line-height: 1.2; letter-spacing: -0.3px; margin-bottom: 2px; }
+.capsule-text span { font-size: 11px; font-weight: 500; opacity: 0.8; }
+.capsule-btn { background: white; color: #1E293B; border: none; padding: 8px 16px; border-radius: 99px; font-size: 12px; font-weight: 800; cursor: pointer; transition: transform 0.1s; }
+.capsule-btn:active { transform: scale(0.95); }
+.capsule-close { background: rgba(255,255,255,0.1); color: white; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-right: 2px; }
+
+:root[data-theme="light"] .ios-install-capsule { background: rgba(255, 255, 255, 0.85); border-color: rgba(0,0,0,0.05); }
+:root[data-theme="light"] .capsule-text { color: #1E293B; }
+:root[data-theme="light"] .capsule-btn { background: #1E293B; color: white; }
+:root[data-theme="light"] .capsule-close { background: rgba(0,0,0,0.05); color: #64748B; }
+
+/* --- 5. AUTH SCREEN --- */
+#finance-app-root #auth-screen { position: absolute; inset: 0; background: var(--fin-bg-base); z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 32px; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); }
+#finance-app-root #auth-screen.active { display: flex; }
+#finance-app-root .auth-logo { width: 120px; height: auto; object-fit: contain; margin-bottom: 24px; display: block; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1)); }
+#finance-app-root .auth-btn { width: 100%; padding: 18px; border-radius: 20px; border: none; background: var(--fin-grad-main); color: white; font-weight: 800; font-size: 16px; margin-top: 16px; cursor: pointer; box-shadow: 0 8px 20px -6px var(--fin-primary); transition: transform 0.2s var(--ios-ease); }
+#finance-app-root .auth-btn:active { transform: scale(0.96); }
+
+/* --- 6. LAYOUT & HEADERS --- */
+#finance-app-root .app-content { 
+    flex: 1; overflow-y: auto; padding-bottom: calc(110px + var(--safe-bottom)); 
+    scroll-behavior: smooth; overscroll-behavior-y: contain; 
+}
+#finance-app-root .app-content::-webkit-scrollbar { display: none; }
+
+#finance-app-root .header-dynamic { display: none; padding: calc(18px + var(--safe-top)) 24px 24px; background: var(--fin-grad-main); color: white; justify-content: space-between; align-items: center; z-index: 60; border-radius: 0 0 36px 36px; position: relative; box-shadow: 0 10px 30px -10px var(--fin-primary-dark); }
+#finance-app-root .page-header { background: var(--fin-grad-main); padding: calc(24px + var(--safe-top)) 32px 32px; border-radius: 0 0 40px 40px; color: white; box-shadow: 0 10px 30px -10px var(--fin-primary-dark); margin-bottom: 24px; display: flex; flex-direction: column; gap: 8px; position: relative; z-index: 10; }
+#finance-app-root .ph-title { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin: 0; line-height: 1.1; color: white; }
+#finance-app-root .ph-subtitle { font-size: 14px; opacity: 0.9; margin: 0; font-weight: 500; color: rgba(255,255,255,0.9); }
+#finance-app-root .sub-header { flex: 0 0 auto; padding: 16px 24px; padding-top: calc(16px + var(--safe-top)); background: transparent; display: flex; align-items: center; gap: 16px; z-index: 40; position: sticky; top: 0; }
+
+/* --- 7. HOME HERO SECTION --- */
+#finance-app-root .home-header-section { background: var(--fin-grad-main); padding: calc(24px + var(--safe-top)) 24px 70px; color: white; border-radius: 0 0 40px 40px; position: relative; z-index: 20; box-shadow: 0 10px 35px -10px var(--fin-primary-dark); }
+#finance-app-root .home-top-nav { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+#finance-app-root .header-avatar { width: 46px; height: 46px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; color: white; cursor: pointer; overflow: hidden; transition: transform 0.2s; }
+#finance-app-root .header-avatar:active { transform: scale(0.9); }
+#finance-app-root .header-avatar img { width: 100%; height: 100%; object-fit: cover; }
+#finance-app-root .filter-chip { display: flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 99px; font-size: 13px; font-weight: 700; cursor: pointer; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.2); color: white; }
+#finance-app-root .balance-hero { text-align: center; margin-bottom: 24px; }
+#finance-app-root .balance-label { font-size: 13px; font-weight: 600; opacity: 0.9; margin-bottom: 4px; letter-spacing: 0.5px; text-transform: uppercase; color: white; }
+#finance-app-root .balance-val { font-size: 46px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; color: white; }
+
+/* --- 8. ACTION BUTTONS & SCROLL --- */
+#finance-app-root .header-actions { display: flex; gap: 12px; }
+#finance-app-root .h-action-btn { flex: 1; padding: 16px; border-radius: 22px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); color: white; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; font-weight: 800; cursor: pointer; transition: transform 0.2s, background 0.2s; }
+#finance-app-root .h-action-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.25); }
+#finance-app-root .h-action-btn.in i { color: #4ADE80; font-size: 18px;} 
+#finance-app-root .h-action-btn.out i { color: #FF8A8A; font-size: 18px;}
+#finance-app-root .quick-scroll { display: flex; gap: 12px; overflow-x: auto; margin-bottom: 24px; padding: 4px 24px 12px 24px; scrollbar-width: none; margin-left: -24px; margin-right: -24px; }
+#finance-app-root .quick-scroll::-webkit-scrollbar { display: none; }
+#finance-app-root .qa-chip { flex: 0 0 auto; padding: 12px 20px; border-radius: 18px; font-size: 13px; font-weight: 700; white-space: nowrap; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.15); color: white; }
+#finance-app-root .qa-chip:active { transform: scale(0.93); }
+
+/* --- 9. GRIDS, LISTS & CARDS --- */
+#finance-app-root .home-grid-overlap { margin: -40px 20px 24px; border-radius: 32px; padding: 24px 16px; position: relative; z-index: 25; }
+#finance-app-root .home-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 8px; }
+#finance-app-root .menu-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; text-align: center; transition: transform 0.2s; }
+#finance-app-root .menu-item:active { transform: scale(0.92); }
+#finance-app-root .menu-icon { width: 56px; height: 56px; border-radius: 22px; background: var(--fin-primary-soft); color: var(--fin-primary); display: flex; align-items: center; justify-content: center; font-size: 26px; border: 1px solid rgba(0,0,0,0.05); }
+#finance-app-root .menu-label { font-size: 12px; font-weight: 700; color: var(--fin-text-dark); line-height: 1.2; }
+
+#finance-app-root .list-group { padding: 0 24px; display:flex; flex-direction:column; gap:12px; }
+#finance-app-root .list-card { padding: 18px; border-radius: 24px; display: flex; align-items: center; cursor: pointer; position: relative; transition: transform 0.2s, background 0.2s; }
+#finance-app-root .list-card:active { transform: scale(0.97); background: var(--fin-border); }
+#finance-app-root .icon-box { width: 48px; height: 48px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 16px; flex-shrink: 0; }
+#finance-app-root .card-expanded { border-radius: 32px; padding: 24px; display: flex; flex-direction: column; gap: 18px; }
+
+/* FIX: BUDGET BANNER LAYOUT */
+#finance-app-root .card-summary-banner {
+    padding: 24px !important;
+    border-radius: 32px !important;
+    box-shadow: 0 10px 30px -10px var(--fin-primary-dark) !important;
+    margin-bottom: 24px !important;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+}
+
+/* --- 10. BOTTOM NAV & BULK ACTIONS --- */
+#finance-app-root .nav-float, #finance-app-root .bulk-bar { position: absolute; bottom: calc(16px + var(--safe-bottom)); left: 24px; right: 24px; height: 76px; border-radius: 99px; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; z-index: 100; transition: transform 0.3s var(--ios-spring); }
+#finance-app-root .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--fin-text-muted); cursor: pointer; gap: 4px; height: 100%; border-radius: 99px; }
+#finance-app-root .nav-item i { font-size: 26px; transition: transform 0.2s var(--ios-spring); }
+#finance-app-root .nav-item.active { color: var(--fin-primary); }
+#finance-app-root .nav-item.active i { transform: translateY(-4px); font-weight: 800; }
+#finance-app-root .nav-item.active::after { content:''; position: absolute; bottom: 12px; width: 5px; height: 5px; background: var(--fin-primary); border-radius: 50%; }
+#finance-app-root .nav-float.hidden { transform: translateY(200%); opacity: 0; pointer-events: none; }
+#finance-app-root .bulk-bar { background: var(--fin-danger); color: white; transform: translateY(200%); z-index: 102; padding: 0 24px; border: none; }
+#finance-app-root .bulk-bar.active { transform: translateY(0); }
+
+#finance-app-root .nav-fab { width: 60px; height: 60px; background: var(--fin-grad-main); border-radius: 22px; display: flex; align-items: center; justify-content: center; color: white; font-size: 30px; box-shadow: 0 10px 24px -5px var(--fin-primary-dark); transform: translateY(-32px) rotate(45deg); cursor: pointer; z-index: 101; transition: transform 0.2s var(--ios-ease); border: 4px solid var(--fin-bg-base); }
+#finance-app-root .nav-fab i { transform: rotate(-45deg); }
+#finance-app-root .nav-fab:active { transform: translateY(-26px) rotate(45deg) scale(0.9); }
+:root[data-theme="dark"] #finance-app-root .nav-fab { border-color: #000000; }
+
+/* --- 11. MODALS & BOTTOM SHEET (LEGA & OPTIMIZED) --- */
+#finance-app-root .modal-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.4); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s var(--ios-ease); }
+#finance-app-root .modal-backdrop.open { opacity: 1; pointer-events: auto; }
+#finance-app-root .sheet { 
+    position: absolute; bottom: 0; left: 0; right: 0; 
+    border-radius: 40px 40px 0 0; padding: 32px 24px; 
+    transform: translateY(100%); transition: transform 0.3s var(--ios-spring); 
+    max-height: 92vh; display: flex; flex-direction: column; 
+    padding-bottom: calc(48px + var(--safe-bottom)); 
+    box-shadow: 0 -20px 50px rgba(0,0,0,0.2); 
+    border-top: 1px solid var(--fin-glass-border); 
+}
+#finance-app-root .modal-backdrop.open .sheet { transform: translateY(0); }
+#finance-app-root .sheet-handle { width: 44px; height: 6px; background: var(--fin-text-muted); border-radius: 10px; margin: 0 auto 24px; flex-shrink: 0; opacity: 0.3; position: relative; }
+#finance-app-root .sheet-handle::after { content: ''; position: absolute; top: -20px; left: -20px; right: -20px; bottom: -20px; } 
+#finance-app-root .sheet-title { font-size: 22px; font-weight: 800; margin-bottom: 28px; color: var(--fin-text-dark); text-align: center; letter-spacing: -0.5px; }
+#finance-app-root .sheet-scroll { overflow-y: auto; flex: 1; padding-bottom: 32px; overscroll-behavior-y: contain; scrollbar-width: none; }
+#finance-app-root .sheet-scroll::-webkit-scrollbar { display: none; }
+
+/* --- 12. FORMS & INPUTS --- */
+#finance-app-root .inp-std { width: 100%; padding: 16px 20px; background: var(--fin-bg-base); border: 1px solid var(--fin-border); border-radius: 20px; font-size: 16px; font-weight: 600; color: var(--fin-text-dark); transition: border-color 0.2s, box-shadow 0.2s; }
+#finance-app-root .inp-std:focus { border-color: var(--fin-primary); background: transparent; box-shadow: 0 0 0 4px var(--fin-primary-soft); outline: none; }
+#finance-app-root .num-btn { background: transparent; border: 1px solid var(--fin-border); border-radius: 20px; height: 64px; font-size: 22px; font-weight: 700; color: var(--fin-text-dark); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s, background 0.2s; }
+#finance-app-root .num-btn.primary { background: var(--fin-primary); color: white; border: none; }
+#finance-app-root .num-btn:active { transform: scale(0.94); background: var(--fin-border); }
+#finance-app-root .btn-pill { display: flex; align-items: center; gap: 8px; padding: 14px 20px; border-radius: 18px; font-size: 14px; font-weight: 700; border: none; cursor: pointer; transition: transform 0.1s; justify-content: center; }
+#finance-app-root .btn-pill.primary { background: var(--fin-primary); color: white; }
+#finance-app-root .btn-pill:active { transform: scale(0.95); }
+#finance-app-root .b-act-btn { flex: 1; padding: 14px; font-size: 14px; font-weight: 700; background: var(--fin-primary-soft); color: var(--fin-primary); border-radius: 16px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.1s; }
+#finance-app-root .b-act-btn:active { transform: scale(0.95); }
+
+#finance-app-root .budget-actions { display: flex; gap: 10px; margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--fin-border); }
+#finance-app-root .budget-actions .b-act-btn { flex: 1; font-size: 13px; padding: 12px; }
+#finance-app-root .budget-actions .b-act-btn:first-child { background: var(--fin-primary); color: white; }
+#finance-app-root .budget-actions .b-act-btn:not(:first-child) { background: var(--fin-bg-gray); color: var(--fin-text-muted); font-weight: 600; }
+
+/* Numpad Classes Fix */
+#finance-app-root .numpad-display { text-align: center; margin-bottom: 24px; padding: 10px 0; }
+#finance-app-root .numpad-val { font-size: 52px; font-weight: 800; color: var(--fin-primary); letter-spacing: -2px; }
+
+/* Wallet Selector Classes Fix */
+#finance-app-root .wallet-selector { display: flex; gap: 12px; overflow-x: auto; padding: 4px 4px 16px 4px; margin: 0 -4px; scrollbar-width: none; }
+#finance-app-root .wallet-selector::-webkit-scrollbar { display: none; }
+#finance-app-root .ws-item { flex: 0 0 auto; padding: 12px 20px; border-radius: 16px; background: var(--fin-glass-bg); border: 1px solid var(--fin-border); color: var(--fin-text-muted); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: border-color 0.2s; }
+#finance-app-root .ws-item.active { background: var(--fin-primary-soft); color: var(--fin-primary); border-color: var(--fin-primary); }
+
+/* Export Classes Fix */
+#finance-app-root .export-card { background: var(--fin-glass-bg); border-radius: 28px; padding: 28px; border: 1px solid var(--fin-glass-border); margin-bottom: 24px; }
+#finance-app-root .export-preview-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed var(--fin-border); font-size: 15px; }
+#finance-app-root .btn-export { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 18px; border-radius: 20px; font-weight: 700; font-size: 16px; cursor: pointer; border: none; margin-bottom: 14px; transition: transform 0.1s; }
+#finance-app-root .btn-export:active { transform: scale(0.96); }
+#finance-app-root .btn-excel { background: #10B981; color: white; }
+#finance-app-root .btn-pdf { background: #EF4444; color: white; }
+
+/* Analysis Score Classes Fix */
+#finance-app-root .score-wrap { margin: 0 24px 24px; padding: 32px 24px; background: #1E293B; border-radius: 32px; color: white; text-align: center; }
+#finance-app-root .score-big { font-size: 64px; font-weight: 800; line-height: 1; margin: 12px 0; background: linear-gradient(to right, #4ADE80, #38BDF8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+#finance-app-root .score-breakdown, #finance-app-root .chart-cont { background: var(--fin-glass-bg); border-radius: 28px; padding: 24px; margin: 0 24px 24px; border: 1px solid var(--fin-glass-border); }
+#finance-app-root .sb-item { margin-bottom: 16px; }
+#finance-app-root .sb-head { display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; margin-bottom: 8px; color: var(--fin-text-dark); }
+#finance-app-root .sb-bar-bg { width: 100%; height: 10px; background: rgba(0,0,0,0.05); border-radius: 99px; overflow: hidden; }
+#finance-app-root .sb-bar-fill { height: 100%; border-radius: 99px; transition: width 0.3s; }
+#finance-app-root .chart-head { font-size: 16px; font-weight: 800; margin-bottom: 20px; color: var(--fin-text-dark); }
+#finance-app-root .an-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 0 24px 24px; }
+#finance-app-root .an-card { background: var(--fin-glass-bg); border-radius: 28px; padding: 24px; border: 1px solid var(--fin-glass-border); }
+#finance-app-root .an-lbl { font-size: 13px; font-weight: 600; color: var(--fin-text-muted); margin-bottom: 8px; }
+#finance-app-root .an-val { font-size: 20px; font-weight: 800; color: var(--fin-text-dark); }
+
+/* Color Swatches (Fix for Custom Input) */
+#finance-app-root .color-swatch-container { display:flex; gap:16px; overflow-x:auto; padding:10px 4px 24px; scrollbar-width:none; justify-content: flex-start; align-items:center; }
+#finance-app-root .color-swatch-container::-webkit-scrollbar { display:none; }
+#finance-app-root .color-swatch { flex: 0 0 auto; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: transform 0.2s, border-color 0.2s; }
+#finance-app-root .color-swatch.active { border-color: var(--fin-text-dark); transform: scale(1.15); }
+
+/* --- 13. LIQUID GLASS APPLY & MODIFIERS (OPTIMIZED) --- */
+.liquid-glass, .ios-install-capsule, .nav-float, .sheet, .home-grid-overlap, .list-card, .card-expanded, .export-card, .an-card, .score-breakdown, .chart-cont {
+    background: var(--fin-glass-bg);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid var(--fin-glass-border);
+}
+
+#finance-app-root .page-view { display: none; animation: slideUp 0.3s var(--ios-ease); }
+#finance-app-root .page-view.active { display: block; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+#finance-app-root .toast { position: absolute; top: calc(20px + var(--safe-top)); left: 50%; transform: translate(-50%, -150px); background: rgba(28,28,30,0.9); color: white; padding: 14px 24px; border-radius: 99px; font-size: 14px; font-weight: 700; z-index: 9999; transition: transform 0.4s var(--ios-spring); display: flex; align-items: center; gap: 10px; width: max-content; pointer-events: none; }
+#finance-app-root .toast.show { transform: translate(-50%, 0); }
+
+/* Colors logic */
+#finance-app-root .bg-gray { background: var(--fin-bg-base); color: var(--fin-text-muted); }
+#finance-app-root .bg-food { background: rgba(255, 59, 48, 0.15); color: #FF3B30; } 
+#finance-app-root .bg-transport { background: rgba(0, 122, 255, 0.15); color: #007AFF; } 
+#finance-app-root .bg-shop { background: rgba(175, 82, 222, 0.15); color: #AF52DE; } 
+#finance-app-root .bg-income { background: rgba(52, 199, 89, 0.15); color: #34C759; } 
+#finance-app-root .bg-bill { background: rgba(255, 149, 0, 0.15); color: #FF9500; } 
+#finance-app-root .bg-health { background: rgba(88, 86, 214, 0.15); color: #5856D6; } 
+#finance-app-root .bg-edu { background: rgba(90, 200, 250, 0.15); color: #5AC8FA; }
+
+/* --- 14. CATEGORY GRID FIX --- */
+#finance-app-root .cat-pick-item { display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; transition: transform 0.1s; width: 100%; height: 100%; }
+#finance-app-root .cat-pick-item:active { transform: scale(0.9); }
+#finance-app-root .cat-pick-icon { width: 64px; height: 64px; border-radius: 24px; background: var(--fin-bg-base); display: flex; align-items: center; justify-content: center; font-size: 30px; color: var(--fin-text-muted); border: 1px solid var(--fin-border); flex-shrink: 0; }
+#finance-app-root .cat-pick-label { font-size: 12px; font-weight: 700; color: var(--fin-text-dark); text-align: center; width: 100%; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; word-break: break-word; min-height: 31px; }
+
+/* --- 15. PROFILE & AVATAR --- */
+#finance-app-root .profile-avatar-large { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--fin-glass-border); overflow: hidden; margin-bottom: 20px; position: relative; background: var(--fin-glass-bg); display: flex; align-items: center; justify-content: center; }
+#finance-app-root .profile-avatar-large img { width: 100%; height: 100%; object-fit: cover; }
+#finance-app-root .avatar-uploader { width: 130px; height: 130px; margin: 0 auto 36px; position: relative; cursor: pointer; }
+#finance-app-root .avatar-preview { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; border: 2px dashed var(--fin-border); background: var(--fin-bg-base); display: flex; align-items: center; justify-content: center; color: var(--fin-text-muted); font-size: 42px; position: relative; }
+#finance-app-root .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+#finance-app-root .avatar-edit-badge { position: absolute; bottom: 0; right: 0; width: 40px; height: 40px; background: var(--fin-primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 4px solid var(--fin-bg-base); }
+
+/* --- 16. WALLETS GRADIENT --- */
+#finance-app-root .wallet-grid { display: grid; grid-template-columns: 1fr; gap: 20px; padding: 0 24px; }
+#finance-app-root .card-wallet { border-radius: 32px; padding: 32px 28px; color: white; position: relative; overflow: hidden; box-shadow: 0 10px 25px -10px rgba(0,0,0,0.3); cursor: pointer; transition: transform 0.1s; }
+#finance-app-root .card-wallet:active { transform: scale(0.97); }
+#finance-app-root .grad-blue { background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%); }
+#finance-app-root .grad-green { background: linear-gradient(135deg, #34C759 0%, #30B0C7 100%); }
+#finance-app-root .grad-purple { background: linear-gradient(135deg, #AF52DE 0%, #5E5CE6 100%); }
+#finance-app-root .grad-orange { background: linear-gradient(135deg, #FF9500 0%, #FF3B30 100%); }
+#finance-app-root .grad-dark { background: linear-gradient(135deg, #1C1C1E 0%, #3A3A3C 100%); }
+
+/* --- 17. OTHERS (Empty State, Selection, Tutorial FIX) --- */
+#finance-app-root .empty-state-box { text-align: center; padding: 80px 24px; color: var(--fin-text-muted); display: flex; flex-direction: column; align-items: center; justify-content: center; background: transparent; width: 100%; }
+#finance-app-root .empty-icon { font-size: 72px; color: var(--fin-primary); margin-bottom: 24px; opacity: 0.8; filter: drop-shadow(0 10px 20px var(--fin-primary-soft)); }
+#finance-app-root .empty-title { font-size: 20px; font-weight: 800; color: var(--fin-text-dark); margin-bottom: 12px; letter-spacing: -0.5px; }
+
+#finance-app-root .check-area { width: 0; opacity: 0; overflow: hidden; transition: all 0.2s; margin-right: 0; }
+#finance-app-root .list-card.selection-mode .check-area { width: 36px; opacity: 1; margin-right: 12px; }
+#finance-app-root .check-circle { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--fin-text-muted); display: flex; align-items: center; justify-content: center; }
+#finance-app-root .list-card.selected { border-color: var(--fin-primary); background: var(--fin-primary-soft); }
+#finance-app-root .list-card.selected .check-circle { background: var(--fin-primary); border-color: var(--fin-primary); color: white; }
+
+/* FIX TUTORIAL OVERLAY */
+#finance-app-root #tut-overlay { position: absolute !important; inset: 0 !important; z-index: 99999 !important; pointer-events: none; opacity: 0; transition: opacity 0.3s; }
+#finance-app-root #tut-overlay.active { opacity: 1; pointer-events: auto; }
+#finance-app-root .tut-spotlight { position: absolute; border-radius: 28px !important; box-shadow: 0 0 0 9999px rgba(0,0,0,0.65) !important; transition: all 0.3s; pointer-events: none; border: 2px solid white !important; z-index: 1000; }
+#finance-app-root .tut-tooltip { position: absolute; background: white !important; padding: 24px !important; border-radius: 24px !important; width: 280px !important; box-shadow: 0 20px 50px -10px rgba(0,0,0,0.5) !important; z-index: 1001; opacity: 0; transform: translateY(15px); transition: all 0.3s; }
+#finance-app-root .tut-tooltip.active { opacity: 1; transform: translateY(0); }
+#finance-app-root .tut-tooltip::before { content: ''; position: absolute; width: 16px; height: 16px; background: white; transform: rotate(45deg); }
+#finance-app-root .tut-tooltip.top::before { bottom: -8px; left: 50%; margin-left: -8px; }
+#finance-app-root .tut-tooltip.bottom::before { top: -8px; left: 50%; margin-left: -8px; }
+#finance-app-root .tut-title { font-weight: 800; font-size: 18px; margin-bottom: 8px; color: var(--fin-primary); }
+#finance-app-root .tut-desc { font-size: 14px; color: var(--fin-text-muted); line-height: 1.6; margin-bottom: 20px; font-weight: 500; }
+#finance-app-root .tut-actions { display: flex; justify-content: flex-end; gap: 12px; }
+#finance-app-root .tut-btn { padding: 10px 18px; border-radius: 14px; font-size: 14px; font-weight: 800; cursor: pointer; border: none; }
+#finance-app-root .tut-btn:active { transform: scale(0.95); }
+#finance-app-root .tut-btn.skip { background: transparent; color: var(--fin-text-muted); }
+#finance-app-root .tut-btn.next { background: var(--fin-primary); color: white; }
