@@ -14,6 +14,7 @@ D.state = D.state || {
     groups: [], members: [], activeGroupId: null, groupOwner: null,
     numBuffer: '0', selectionMode: false, selectedIds: new Set(),
     filter: { mode: 'payday', start: null, end: null, budgetActiveOnly: true },
+    listFilter: { search: '', type: 'all', walletId: 'all', catId: 'all' },
     filteredTxs: [], filterLabel: '', pendingBudgetId: null,
     quickActions: [], budgetTemplates: [], currentPage: 'home'
 };
@@ -337,16 +338,72 @@ Object.assign(D.utils, {
         S.filter.start = D.utils.startOfDay(s); S.filter.end = D.utils.endOfDay(e);
         S.filterLabel = `${s.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })} - ${e.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}`;
 
-        ['cycle-filter-disp', 'list-period-disp', 'budget-period-disp', 'exp-period-label', 'an-period-disp'].forEach(i => {
+        ['cycle-filter-disp', 'list-period-disp', 'list-period-chip', 'budget-period-disp', 'exp-period-label', 'an-period-disp'].forEach(i => {
             const el = document.getElementById(i); if (el) el.innerText = S.filterLabel;
         });
     },
 
     applyFilter: () => {
         D.utils.calculateDates();
-        S.filteredTxs = (S.txs || []).filter(t => t.date && D.utils.isBetween(t.date, S.filter.start, S.filter.end));
+        const lf = S.listFilter || {};
+        const q = (lf.search || '').toLowerCase().trim();
+        const fType = lf.type || 'all';
+        const fWallet = lf.walletId || 'all';
+        const fCat = lf.catId || 'all';
+
+        S.filteredTxs = (S.txs || []).filter(t => {
+            if (!t.date || !D.utils.isBetween(t.date, S.filter.start, S.filter.end)) return false;
+            if (q && !(t.desc || '').toLowerCase().includes(q)) return false;
+            if (fType !== 'all' && t.type !== fType) return false;
+            if (fWallet !== 'all' && t.walletId != fWallet) return false;
+            if (fCat !== 'all' && t.catId != fCat) return false;
+            return true;
+        });
         if (D.render && typeof D.render.current === 'function') requestAnimationFrame(D.render.current);
     },
+
+    /* Populate wallet & category dropdowns on the list page */
+    initListFilters: () => {
+        const wSel = document.getElementById('list-filter-wallet');
+        const cSel = document.getElementById('list-filter-cat');
+        if (wSel) {
+            const cur = wSel.value;
+            wSel.innerHTML = '<option value="all">Semua Dompet</option>' +
+                (S.wallets || []).map(w => `<option value="${w.id}" ${cur == w.id ? 'selected' : ''}>${w.name}</option>`).join('');
+        }
+        if (cSel) {
+            const cur = cSel.value;
+            cSel.innerHTML = '<option value="all">Semua Kategori</option>' +
+                (S.cats || []).map(c => `<option value="${c.id}" ${cur == c.id ? 'selected' : ''}>${c.name}</option>`).join('');
+        }
+        /* Sync period chip label */
+        const chip = document.getElementById('list-period-chip');
+        if (chip && S.filterLabel) chip.innerText = S.filterLabel;
+    },
+
+    /* Called by filter selects onChange */
+    applyListFilters: () => {
+        const lf = S.listFilter;
+        const t = document.getElementById('list-filter-type');
+        const w = document.getElementById('list-filter-wallet');
+        const c = document.getElementById('list-filter-cat');
+        if (t) lf.type = t.value;
+        if (w) lf.walletId = w.value;
+        if (c) lf.catId = c.value;
+        D.utils.applyFilter();
+    },
+
+    /* Debounced realtime search on the list page */
+    onListSearch: (() => {
+        let timer = null;
+        return (val) => {
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                S.listFilter.search = val;
+                D.utils.applyFilter();
+            }, 220);
+        };
+    })(),
 
     toggleBudgetFilter: () => { S.filter.budgetActiveOnly = !S.filter.budgetActiveOnly; if (D.render && D.render.budgets) D.render.budgets(); },
     openFilter: () => { const fs = document.getElementById('filter-start'); const fe = document.getElementById('filter-end'); if (fs) fs.value = new Date(S.filter.start).toISOString().slice(0, 10); if (fe) fe.value = new Date(S.filter.end).toISOString().slice(0, 10); document.getElementById('modalFilter')?.classList.add('open'); },

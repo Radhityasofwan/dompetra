@@ -583,6 +583,10 @@
 
         list: () => {
             const el = U.id('full-list'); if (!el) return;
+
+            /* Populate filter dropdowns whenever list is rendered */
+            if (typeof D.utils.initListFilters === 'function') D.utils.initListFilters();
+
             const g = {};
             const fTxs = S.filteredTxs || [];
 
@@ -594,13 +598,18 @@
             }
 
             const keys = Object.keys(g);
+            const hasSearch = (S.listFilter?.search || '') !== '' ||
+                (S.listFilter?.type || 'all') !== 'all' ||
+                (S.listFilter?.walletId || 'all') !== 'all' ||
+                (S.listFilter?.catId || 'all') !== 'all';
+
             if (keys.length === 0) {
                 el.innerHTML = `
                 <div class="empty-state-box" style="margin-top:40px;">
-                    <i class="ph-duotone ph-magnifying-glass empty-icon"></i>
-                    <div class="empty-title">Tidak Ada Data</div>
-                    <div class="empty-desc">Belum ada transaksi di periode ini.</div>
-                    <button class="btn-pill primary" style="margin:20px auto 0; padding:0 24px; font-size:14px; height:48px;" onclick="Dompetra.modals.openPicker('tx')">+ Catat Baru</button>
+                    <i class="ph-duotone ph-${hasSearch ? 'magnifying-glass' : 'receipt'} empty-icon"></i>
+                    <div class="empty-title">${hasSearch ? 'Tidak Ditemukan' : 'Belum Ada Data'}</div>
+                    <div class="empty-desc">${hasSearch ? 'Coba ubah kata kunci atau filter.' : 'Belum ada transaksi di periode ini.'}</div>
+                    ${!hasSearch ? `<button class="btn-pill primary" style="margin:20px auto 0; padding:0 24px; font-size:14px; height:48px;" onclick="Dompetra.modals.openPicker('tx')">+ Catat Baru</button>` : ''}
                 </div>`;
                 return;
             }
@@ -608,29 +617,57 @@
             const htmlArr = [];
             for (let i = 0; i < keys.length; i++) {
                 const d = keys[i];
-                htmlArr.push(`<div style="font-size:13px; font-weight:800; color:var(--fin-text-muted); margin:24px 0 12px; padding-left:4px;">${d}</div>`);
+                htmlArr.push(`<div style="font-size:12px; font-weight:800; color:var(--fin-text-muted); margin:20px 0 10px; padding-left:4px; text-transform:uppercase; letter-spacing:0.5px;">${d}</div>`);
                 const items = g[d];
                 for (let j = 0; j < items.length; j++) {
                     const t = items[j];
-                    const c = (S.cats || []).find(x => x.id == t.catId) || { icon: 'coins', color: 'bg-gray', name: 'Umum' };
+                    const isIncome = t.type === 'income';
+
+                    /* Wallet badge */
                     const w = (S.wallets || []).find(x => x.id == t.walletId);
-                    const walletName = w ? w.name : (t.group_id ? 'Dompet Grup' : 'Lainnya');
+                    const walletName = w ? w.name : (t.group_id ? 'Grup' : 'Lainnya');
+
+                    /* Budget indicator */
+                    const hasBudget = !!(t.budgetId);
+                    const budgetBadge = hasBudget
+                        ? `<span style="background:var(--fin-primary-soft); color:var(--fin-primary); font-size:10px; font-weight:800; padding:3px 8px; border-radius:8px;">Budget</span>`
+                        : `<span style="background:var(--fin-bg-base); color:var(--fin-text-muted); font-size:10px; font-weight:700; padding:3px 8px; border-radius:8px; border:1px solid var(--fin-border);">Non-Budget</span>`;
+
+                    /* Icon: income = arrow-up, expense = arrow-down */
+                    const iconBg = isIncome ? 'background:var(--fin-success-soft); color:var(--fin-success);' : 'background:var(--fin-danger-soft); color:var(--fin-danger);';
+                    const iconName = isIncome ? 'arrow-up' : 'arrow-down';
+
+                    /* Catatan */
+                    const notes = t.desc ? t.desc : '<span style="opacity:0.45;">Tidak ada catatan</span>';
+
                     htmlArr.push(`
-                    <div class="list-card liquid-glass ${S.selectionMode ? 'selection-mode' : ''} ${S.selectionMode && S.selectedIds.has(t.id) ? 'selected' : ''}" onclick="${S.selectionMode ? `Dompetra.utils.toggleItem('${t.id}')` : `Dompetra.modals.editItem('${t.id}','tx')`}">
+                    <div class="list-card liquid-glass ${S.selectionMode ? 'selection-mode' : ''} ${S.selectionMode && S.selectedIds.has(t.id) ? 'selected' : ''}"
+                         onclick="${S.selectionMode ? `Dompetra.utils.toggleItem('${t.id}')` : `Dompetra.modals.editItem('${t.id}','tx')`}"
+                         style="align-items:flex-start; gap:14px; padding:16px 18px;">
                         <div class="check-area"><div class="check-circle"><i class="ph-bold ph-check"></i></div></div>
-                        <div class="icon-box ${c.color}"><i class="ph-bold ph-${c.icon}"></i></div>
-                        <div style="flex:1;">
-                            <div style="font-size:15px; font-weight:800; color:var(--fin-text-dark); margin-bottom:2px;">${c.name}</div>
-                            <div style="font-size:12px; color:var(--fin-text-muted); font-weight:600;"><i class="ph-bold ph-wallet" style="font-size:11px; margin-right:4px;"></i>${walletName}</div>
+                        <div class="icon-box" style="${iconBg} width:42px; height:42px; border-radius:16px; flex-shrink:0; margin:2px 0 0 0;">
+                            <i class="ph-bold ph-${iconName}" style="font-size:20px;"></i>
                         </div>
-                        <div style="font-weight:800; font-size:15px; color:${t.type === 'income' ? 'var(--fin-success)' : 'var(--fin-text-dark)'};">
-                            ${t.type === 'income' ? '+' : '-'} ${U.fmtMoney(t.amount)}
+                        <div style="flex:1; min-width:0;">
+                            <div style="font-size:14px; font-weight:700; color:var(--fin-text-dark); margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${notes}</div>
+                            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                <span style="background:var(--fin-bg-base); color:var(--fin-text-muted); font-size:10px; font-weight:700; padding:3px 8px; border-radius:8px; border:1px solid var(--fin-border); display:flex; align-items:center; gap:4px;">
+                                    <i class="ph-bold ph-wallet" style="font-size:10px;"></i>${walletName}
+                                </span>
+                                ${budgetBadge}
+                            </div>
+                        </div>
+                        <div style="text-align:right; flex-shrink:0;">
+                            <div style="font-weight:800; font-size:15px; color:${isIncome ? 'var(--fin-success)' : 'var(--fin-danger)'}; white-space:nowrap;">
+                                ${isIncome ? '+' : '-'} ${U.fmtMoney(t.amount)}
+                            </div>
                         </div>
                     </div>`);
                 }
             }
             el.innerHTML = htmlArr.join('');
         },
+
 
         budgets: () => {
             const el = U.id('budget-list'); if (!el) return;

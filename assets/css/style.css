@@ -1068,6 +1068,49 @@ body {
     outline: none;
 }
 
+/* --- List-page search & filter fixes --- */
+#finance-app-root #list-search {
+    -webkit-user-select: text;
+    user-select: text;
+    font-size: 15px;
+    padding: 14px 18px 14px 48px;
+    border-radius: 18px;
+}
+
+#finance-app-root #list-search::placeholder {
+    color: var(--fin-text-muted);
+    font-weight: 500;
+}
+
+#finance-app-root #list-filter-type,
+#finance-app-root #list-filter-wallet,
+#finance-app-root #list-filter-cat {
+    -webkit-user-select: auto;
+    user-select: auto;
+    width: auto;
+    font-family: inherit;
+    cursor: pointer;
+    background: var(--fin-bg-base);
+    border: 1px solid var(--fin-border);
+    border-radius: 14px;
+    color: var(--fin-text-dark);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 14px;
+    height: 42px;
+    transition: border-color 0.2s;
+    -webkit-appearance: auto;
+    appearance: auto;
+}
+
+#finance-app-root #list-filter-type:focus,
+#finance-app-root #list-filter-wallet:focus,
+#finance-app-root #list-filter-cat:focus {
+    border-color: var(--fin-primary);
+    box-shadow: 0 0 0 3px var(--fin-primary-soft);
+    outline: none;
+}
+
 #finance-app-root .num-btn {
     background: transparent;
     border: 1px solid var(--fin-border);
