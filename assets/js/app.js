@@ -1167,102 +1167,234 @@
     // ========================================================================
     D.tutorial = {
         steps: [
-            { target: null, title: 'Selamat Datang!', desc: 'Halo! Mari kita atur keuanganmu agar lebih sehat. Ikuti petunjuk singkat ini ya.', nav: 'home' },
-            { target: 'btn-menu-cat', title: 'Atur Kategori', desc: 'Pertama-tama, persiapkan kategori pengeluaran dan pemasukan sesuai kebutuhanmu.', nav: 'home' },
-            { target: 'btn-home-in', title: 'Catat Pemasukan', desc: 'Mendapat gaji atau uang saku? Segera masukkan datanya melalui tombol ini.', nav: 'home' },
-            { target: 'btn-home-out', title: 'Catat Pengeluaran', desc: 'Setiap melakukan belanja atau pembayaran, catat di sini agar uangmu terlacak.', nav: 'home' },
-            { target: 'btn-budget-add', title: 'Buat Anggaran', desc: 'Agar tidak boros, batasi batas maksimal pengeluaranmu per kategori setiap bulan.', nav: 'budget' },
-            { target: 'btn-budget-template', title: 'Template Budget', desc: 'Agar cepat, simpan budget rutinmu sebagai template di sini.', nav: 'budget' },
-            { target: 'btn-goal-add', title: 'Impian Keuangan', desc: 'Tabung untuk impianmu (HP baru, Liburan) di sini.', nav: 'budget' },
-            { target: 'btn-qa-settings', title: 'Transaksi Cepat', desc: 'Sering beli kopi? Buat tombol pintas di sini agar mencatat cuma 1 klik.', nav: 'profile' },
-            { target: 'btn-menu-export', title: 'Laporan', desc: 'Download laporan keuanganmu dalam format Excel atau PDF.', nav: 'home' },
-            { target: 'btn-menu-shared', title: 'Grup Bersama', desc: 'Kelola uang bersama pasangan atau tim di sini.', nav: 'home' }
+            // --- Welcome ---
+            {
+                target: null, nav: 'home',
+                title: '👋 Selamat Datang di Dompetra!',
+                desc: 'Mari kenali fitur-fitur penting agar keuanganmu lebih sehat. Ikuti panduan singkat ini — hanya butuh 1 menit!'
+            },
+            // --- Kategori ---
+            {
+                target: 'btn-menu-cat', nav: 'home',
+                title: '🏷️ Atur Kategori',
+                desc: 'Buat kategori pengeluaran & pemasukan sesuai kebutuhanmu (Makan, Transport, Gaji, dll). Ini fondasi pencatatan yang rapi.'
+            },
+            // --- Dompet ---
+            {
+                target: 'btn-menu-wallets', nav: 'home',
+                title: '👛 Kelola Dompet',
+                desc: 'Tambahkan dompet atau akun bankmu (Cash, BCA, GoPay, dll). Saldo setiap dompet terlacak otomatis saat kamu mencatat transaksi.'
+            },
+            // --- Catat Pemasukan ---
+            {
+                target: 'btn-home-in', nav: 'home',
+                title: '💚 Catat Pemasukan',
+                desc: 'Terima gaji atau uang masuk? Tap di sini, masukkan nominal & kategori — selesai dalam 5 detik!'
+            },
+            // --- Catat Pengeluaran ---
+            {
+                target: 'btn-home-out', nav: 'home',
+                title: '🛍️ Catat Pengeluaran',
+                desc: 'Setiap belanja atau bayar tagihan, catat di sini. Saldo dompet & budget-mu otomatis terkoreksi.'
+            },
+            // --- List Riwayat ---
+            {
+                target: 'list-search', nav: 'list',
+                title: '🔍 Cari Transaksi',
+                desc: 'Ketik kata kunci untuk mencari transaksi berdasarkan catatan. Hasilnya realtime saat kamu mengetik.'
+            },
+            // --- Filter List ---
+            {
+                target: 'list-filter-type', nav: 'list',
+                title: '🎛️ Filter Transaksi',
+                desc: 'Filter berdasarkan tipe (pemasukan/pengeluaran), dompet, atau kategori. Semua filter bisa dikombinasikan sekaligus.'
+            },
+            // --- Budget ---
+            {
+                target: 'btn-budget-add', nav: 'budget',
+                title: '📊 Buat Anggaran (Budget)',
+                desc: 'Tetapkan batas anggaran per keperluan. Saat transaksi dicatat, sisa budget berkurang otomatis — anti-boros!'
+            },
+            // --- Template Budget ---
+            {
+                target: 'btn-budget-filter-active', nav: 'budget',
+                title: '✅ Status Budget',
+                desc: 'Filter budget Aktif, Kadaluarsa, atau Semua. Budget yang melewati periode tampil redup & dicoret secara otomatis.'
+            },
+            // --- Goals ---
+            {
+                target: 'btn-goal-add', nav: 'budget',
+                title: '🎯 Financial Goals',
+                desc: 'Punya target menabung? Buat Financial Goal dan pantau progressnya menuju impianmu (HP baru, liburan, dll).'
+            },
+            // --- Quick Actions ---
+            {
+                target: 'btn-qa-settings', nav: 'profile',
+                title: '⚡ Transaksi Cepat',
+                desc: 'Beli kopi tiap pagi? Buat tombol pintasan sehingga mencatat cukup 1 tap — tanpa mengisi form dari awal.'
+            },
+            // --- Export ---
+            {
+                target: 'btn-menu-export', nav: 'home',
+                title: '📄 Download Laporan',
+                desc: 'Export seluruh data keuanganmu ke format Excel atau PDF kapan saja untuk arsip atau analisis.'
+            },
+            // --- Selesai ---
+            {
+                target: null, nav: null,
+                title: '🎉 Kamu Siap!',
+                desc: 'Mulai catat transaksi pertamamu sekarang. Konsistensi mencatat = keuangan sehat. Semangat!'
+            }
         ],
         currentStep: 0,
         active: false,
+
         init: (force = false) => {
             if (!force && localStorage.getItem('dompetra_tut_done')) return;
             if (!force && S.txs && S.txs.length > 5) {
                 localStorage.setItem('dompetra_tut_done', 'true');
                 return;
             }
-
             D.tutorial.active = true;
             D.tutorial.currentStep = 0;
             const overlay = document.getElementById('tut-overlay');
             if (overlay) overlay.classList.add('active');
-
             D.tutorial.showStep();
         },
+
         restart: () => {
             localStorage.removeItem('dompetra_tut_done');
             D.tutorial.init(true);
             U.closeAll();
         },
+
         showStep: () => {
             const step = D.tutorial.steps[D.tutorial.currentStep];
             if (!step) return D.tutorial.end();
 
+            // Update progress indicator
+            const prog = document.getElementById('tut-progress');
+            if (prog) prog.innerText = `${D.tutorial.currentStep + 1} / ${D.tutorial.steps.length}`;
+
+            // Update last step button label
+            const nextBtn = document.querySelector('.tut-btn.next');
+            if (nextBtn) nextBtn.innerText = D.tutorial.currentStep === D.tutorial.steps.length - 1 ? '✓ Selesai' : 'Lanjut →';
+
+            // Show/hide back button
+            const backBtn = document.getElementById('tut-btn-back');
+            if (backBtn) backBtn.style.display = D.tutorial.currentStep > 0 ? 'block' : 'none';
+
+            // Hide tooltip while transitioning
+            const tip = document.getElementById('tut-tooltip');
+            if (tip) { tip.classList.remove('active', 'tip-above', 'tip-below'); }
+
+            // Navigate to the correct page if needed
             if (step.nav && S.currentPage !== step.nav) {
                 D.nav.go(step.nav);
-                setTimeout(() => D.tutorial.renderSpotlight(step), 400);
+                setTimeout(() => D.tutorial._scrollAndRender(step), 350);
+            } else {
+                D.tutorial._scrollAndRender(step);
+            }
+        },
+
+        /* Scroll to target, then render spotlight after scroll settles */
+        _scrollAndRender: (step) => {
+            if (!step.target) {
+                // Welcome / end step — no element
+                D.tutorial.renderSpotlight(step);
+                return;
+            }
+            const el = document.getElementById(step.target);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+                // Wait for smooth scroll to settle before rendering spotlight
+                setTimeout(() => D.tutorial.renderSpotlight(step), 280);
             } else {
                 D.tutorial.renderSpotlight(step);
             }
         },
+
         renderSpotlight: (step) => {
             const spot = document.getElementById('tut-spotlight');
             const tip = document.getElementById('tut-tooltip');
-            const title = document.getElementById('tut-title');
-            const desc = document.getElementById('tut-desc');
-
+            const titleEl = document.getElementById('tut-title');
+            const descEl = document.getElementById('tut-desc');
             if (!spot || !tip) return;
 
-            title.innerText = step.title;
-            desc.innerText = step.desc;
+            if (titleEl) titleEl.innerText = step.title;
+            if (descEl) descEl.innerText = step.desc;
 
             if (!step.target) {
-                if (D.utils && typeof D.utils.confetti === 'function') {
-                    D.utils.confetti();
-                }
-                spot.style.top = '50%'; spot.style.left = '50%'; spot.style.width = '0'; spot.style.height = '0';
-                spot.classList.remove('pulse');
-                tip.style.top = '50%'; tip.style.left = '50%'; tip.style.transform = 'translate(-50%, -50%)';
-                tip.classList.remove('top', 'bottom'); tip.classList.add('active');
+                // Welcome / end — centered, no spotlight hole
+                if (D.tutorial.currentStep === 0 && D.utils && typeof D.utils.confetti === 'function') D.utils.confetti();
+                if (D.tutorial.currentStep === D.tutorial.steps.length - 1 && D.utils && typeof D.utils.confetti === 'function') D.utils.confetti();
+
+                // Hide spotlight
+                spot.style.width = '0';
+                spot.style.height = '0';
+                spot.style.top = '50%';
+                spot.style.left = '50%';
+                spot.style.boxShadow = 'none';
+
+                // Center tooltip in viewport
+                tip.style.left = '50%';
+                tip.style.top = '50%';
+                tip.style.transform = 'translate(-50%, -50%) translateY(0)';
+                tip.classList.remove('tip-above', 'tip-below');
+                tip.classList.add('active');
                 return;
             }
 
             const el = document.getElementById(step.target);
-            if (el) {
-                const rect = el.getBoundingClientRect();
-                const pad = 12;
-                spot.style.width = (rect.width + pad * 2) + 'px';
-                spot.style.height = (rect.height + pad * 2) + 'px';
-                spot.style.top = (rect.top - pad) + 'px';
-                spot.style.left = (rect.left - pad) + 'px';
-                spot.classList.add('pulse');
-
-                const tipH = 150;
-                let tipTop = rect.top + rect.height + 24;
-                let tipClass = 'top';
-
-                if (tipTop + tipH > window.innerHeight) {
-                    tipTop = rect.top - tipH - 24;
-                    tipClass = 'bottom';
-                }
-                tip.style.top = tipTop + 'px';
-
-                let tipLeft = rect.left + (rect.width / 2) - 130;
-                if (tipLeft < 10) tipLeft = 10;
-                if (tipLeft + 260 > window.innerWidth) tipLeft = window.innerWidth - 270;
-
-                tip.style.left = tipLeft + 'px';
-                tip.style.transform = 'translateY(0)';
-
-                tip.classList.remove('top', 'bottom');
-                tip.classList.add(tipClass, 'active');
+            if (!el) {
+                // Element not found — skip gracefully
+                D.tutorial.next();
+                return;
             }
+
+            /* --- SPOTLIGHT: position:fixed, coords direct from getBoundingClientRect --- */
+            const rect = el.getBoundingClientRect();
+            const pad = 10;
+            spot.style.width = (rect.width + pad * 2) + 'px';
+            spot.style.height = (rect.height + pad * 2) + 'px';
+            spot.style.top = (rect.top - pad) + 'px';
+            spot.style.left = (rect.left - pad) + 'px';
+            spot.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.62)';
+
+            /* --- TOOLTIP: clamp within viewport --- */
+            const TIP_W = Math.min(300, window.innerWidth - 32);
+            const TIP_H = 200; // estimated
+            const GAP = 16;
+
+            // Prefer showing tooltip BELOW the element; fall back to above
+            let tipTop, arrowClass;
+            const belowY = rect.bottom + pad + GAP;
+            const aboveY = rect.top - pad - GAP - TIP_H;
+
+            if (belowY + TIP_H < window.innerHeight - 16) {
+                tipTop = belowY;
+                arrowClass = 'tip-below';
+            } else if (aboveY > 16) {
+                tipTop = aboveY;
+                arrowClass = 'tip-above';
+            } else {
+                // Fallback — just above midscreen
+                tipTop = Math.max(16, window.innerHeight / 2 - TIP_H / 2);
+                arrowClass = 'tip-below';
+            }
+
+            // Horizontally center on element, clamped within screen
+            let tipLeft = rect.left + (rect.width / 2) - TIP_W / 2;
+            tipLeft = Math.max(16, Math.min(tipLeft, window.innerWidth - TIP_W - 16));
+
+            tip.style.width = TIP_W + 'px';
+            tip.style.top = tipTop + 'px';
+            tip.style.left = tipLeft + 'px';
+            tip.style.transform = 'translateY(0)';
+            tip.classList.remove('tip-above', 'tip-below');
+            tip.classList.add(arrowClass, 'active');
         },
+
         next: () => {
             D.tutorial.currentStep++;
             if (D.tutorial.currentStep >= D.tutorial.steps.length) {
@@ -1271,21 +1403,27 @@
                 D.tutorial.showStep();
             }
         },
+
+        back: () => {
+            if (D.tutorial.currentStep > 0) {
+                D.tutorial.currentStep--;
+                D.tutorial.showStep();
+            }
+        },
+
         skip: () => {
             D.tutorial.end();
         },
+
         end: () => {
             const overlay = document.getElementById('tut-overlay');
             if (overlay) overlay.classList.remove('active');
-
             localStorage.setItem('dompetra_tut_done', 'true');
             D.tutorial.active = false;
-
-            if (S.currentPage !== 'home') {
-                D.nav.go('home');
-            }
+            if (S.currentPage !== 'home') D.nav.go('home');
         }
     };
+
 
     // ========================================================================
     // 7. BOOTSTRAPPING & GLOBAL EVENT DELEGATION
