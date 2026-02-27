@@ -1,6 +1,7 @@
 /**
  * DOMPETRA - DATA MANAGEMENT MODULE
  * ULTRA OPTIMIZED: Concurrency Lock, O(N) Execution, Optimistic UI Updates.
+ * FIXED: Budget Template End-to-End Sync & Error Handling.
  */
 (function (D) {
     const S = D.state;
@@ -562,7 +563,6 @@
             }
         },
 
-
         delCat: async () => {
             const id = U.id('cat-id').value;
             U.confirmDialog('Hapus Kategori?', 'Yakin?', async () => {
@@ -742,40 +742,64 @@
             }, 'primary', 'Simpan');
         },
 
+        // --- NEW TEMPLATE LOGIC (SYNCHRONIZED WITH SCHEMA) ---
         saveTemplate: async () => {
             const name = U.id('tpl-name').value;
             const amount = parseInt(U.id('tpl-amount').value);
-            const startDate = U.id('tpl-start')?.value || new Date().toISOString().slice(0, 10);
+
+            // FIX: Tangkap input jika ada, jika string kosong ('') jadikan null agar tidak ditolak PostgreSQL DATE type
+            const startDate = U.id('tpl-start')?.value || null;
             const duration = parseInt(U.id('tpl-duration')?.value || '30');
+
             if (!name || !amount) return U.toast('Data tidak lengkap');
-            const pl = { name, 'limit': amount, start_date: startDate, duration_days: duration, user_id: S.user.id };
+
+            const pl = {
+                name,
+                'limit': amount,
+                start_date: startDate,
+                duration_days: duration,
+                "catId": null, // CatId null untuk manual form (bisa dikembangkan nanti jika modal template diupgrade)
+                user_id: S.user.id
+            };
+
             try {
-                await sb.from('budget_templates').insert({ ...pl, id: genId('bt') });
+                // FIX: Tangkap error explisit untuk mencegah silent fail
+                const { error } = await sb.from('budget_templates').insert({ ...pl, id: genId('bt') });
+                if (error) throw error;
+
                 D.modals.openTemplateManager();
                 D.data.fetchRemote();
                 U.toast('Template disimpan');
             } catch (e) {
-                U.toast('Gagal membuat template');
+                console.error("Gagal buat template:", e);
+                U.toast('Gagal membuat template (Periksa isian)');
             }
         },
 
         useTemplate: async (tplId) => {
             const t = S.budgetTemplates.find(x => x.id === tplId);
             if (!t) return;
+
             const pl = {
                 name: t.name,
                 'limit': t.limit,
                 start_date: t.start_date || new Date().toISOString().slice(0, 10),
                 duration_days: t.duration_days || 30,
+                "catId": t.catId || null, // FIX: Menyertakan kategori bawaan template jika ada
                 user_id: S.user.id,
                 group_id: S.activeGroupId || null
             };
+
             try {
-                await sb.from('budgets').insert({ ...pl, id: genId('b') });
+                // FIX: Tangkap error
+                const { error } = await sb.from('budgets').insert({ ...pl, id: genId('b') });
+                if (error) throw error;
+
                 D.modals.openTemplateManager();
                 D.data.fetchRemote();
                 U.toast('Budget dibuat!');
             } catch (e) {
+                console.error("Gagal pakai template:", e);
                 U.toast('Gagal menggunakan template');
             }
         },
@@ -858,8 +882,9 @@
                             id: genId('bt'),
                             name: b.name,
                             'limit': b.limit,
-                            start_date: b.start_date,
-                            duration_days: b.duration_days,
+                            start_date: b.start_date || null, // FIX: Cegah string "" menjadi error db
+                            duration_days: b.duration_days || 30,
+                            "catId": b.catId || null, // FIX: Simpan kategorinya juga
                             user_id: S.user.id
                         };
                     }).filter(Boolean);
@@ -889,7 +914,9 @@
 
                     // Sync DB di background
                     try {
-                        await sb.from('budget_templates').insert(toInsert);
+                        // FIX: Tangkap error explisit
+                        const { error } = await sb.from('budget_templates').insert(toInsert);
+                        if (error) throw error;
                     } catch (e) {
                         console.error('Template save error:', e);
                         // Rollback optimistic update
