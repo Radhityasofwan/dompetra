@@ -1287,31 +1287,36 @@
             history.replaceState({ page: 'home' }, '', '');
         },
         go: (pageId, push = true) => {
+            const alreadyOnPage = S.currentPage === pageId;
+
             document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
             const target = document.getElementById('page-' + pageId);
-            if (target) {
-                target.classList.add('active');
-            }
+            if (target) target.classList.add('active');
 
-            const navItems = document.querySelectorAll('.nav-item');
-            navItems.forEach(el => el.classList.remove('active'));
-
-            const map = { 'home': 0, 'list': 1, 'budget': 2, 'profile': 3 };
-            if (map[pageId] !== undefined && navItems[map[pageId]]) {
-                navItems[map[pageId]].classList.add('active');
-            }
+            // Update active nav item using id-based matching (reliable, no index mapping)
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const activeNavItem = document.getElementById('nav-' + pageId);
+            if (activeNavItem) activeNavItem.classList.add('active');
 
             S.currentPage = pageId;
-            window.scrollTo(0, 0);
 
-            if (push) {
-                history.pushState({ page: pageId }, '', '#' + pageId);
-            }
-
-            if (D.render && typeof D.render.current === 'function') {
-                requestAnimationFrame(D.render.current);
+            if (!alreadyOnPage) {
+                window.scrollTo(0, 0);
+                if (push) {
+                    history.pushState({ page: pageId }, '', '#' + pageId);
+                }
+                // Only re-render when switching to a new page (not redundant)
+                if (D.render && typeof D.render.current === 'function') {
+                    requestAnimationFrame(D.render.current);
+                }
+            } else {
+                // Same page tapped \u2014 just ensure push state is consistent
+                if (push) {
+                    history.replaceState({ page: pageId }, '', '#' + pageId);
+                }
             }
         },
+
         filterByBudget: (bid) => {
             D.nav.go('list');
             S.filteredTxs = (S.txs || []).filter(t => t.budgetId == bid);
