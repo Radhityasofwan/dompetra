@@ -15,7 +15,7 @@ D.state = D.state || {
     numBuffer: '0', selectionMode: false, selectedIds: new Set(),
     filter: { mode: 'payday', start: null, end: null, budgetActiveOnly: true },
     listFilter: { search: '', type: 'all', walletId: 'all', catId: 'all' },
-    budgetFilter: { status: 'active', search: '' },
+    budgetFilter: { status: 'active', search: '', catId: 'all' },
     filteredTxs: [], filterLabel: '', pendingBudgetId: null,
     quickActions: [], budgetTemplates: [], currentPage: 'home'
 };
@@ -419,6 +419,35 @@ Object.assign(D.utils, {
         const active = document.getElementById('btn-bfilter-' + status);
         if (active) active.classList.add('active-filter');
         if (D.render && D.render.budgets) D.render.budgets();
+    },
+
+    setBudgetCatFilter: (catId) => {
+        S.budgetFilter.catId = catId || 'all';
+        // Update chip active states
+        document.querySelectorAll('.budget-cat-chip').forEach(el => {
+            el.classList.toggle('active', el.dataset.catid === S.budgetFilter.catId);
+        });
+        if (D.render && D.render.budgets) D.render.budgets();
+    },
+
+    renderBudgetCatChips: () => {
+        const container = document.getElementById('budget-cat-chips');
+        if (!container) return;
+        // Collect distinct catIds that appear in current budgets
+        const budgets = S.budgets || [];
+        const cats = S.cats || [];
+        const usedCatIds = [...new Set(budgets.map(b => b.catId).filter(Boolean))];
+        const usedCats = usedCatIds.map(id => cats.find(c => c.id == id)).filter(Boolean);
+
+        const currentCatId = S.budgetFilter.catId || 'all';
+        let html = `<div class="budget-cat-chip${currentCatId === 'all' ? ' active' : ''}" data-catid="all" onclick="Dompetra.utils.setBudgetCatFilter('all')">Semua</div>`;
+        for (const c of usedCats) {
+            const isActive = c.id == currentCatId;
+            html += `<div class="budget-cat-chip${isActive ? ' active' : ''}" data-catid="${c.id}" onclick="Dompetra.utils.setBudgetCatFilter('${c.id}')">
+                <i class="ph-bold ph-${c.icon || 'coins'}"></i>${c.name}
+            </div>`;
+        }
+        container.innerHTML = html;
     },
 
     onBudgetSearch: (() => {

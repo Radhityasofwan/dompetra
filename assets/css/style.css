@@ -992,13 +992,14 @@ body {
     padding: 32px 24px;
     transform: translateY(100%);
     opacity: 0;
-    transition: transform 0.28s var(--ios-spring), opacity 0.28s var(--ios-ease);
+    transition: transform 0.18s ease-out, opacity 0.15s ease-out;
     max-height: 92vh;
     display: flex;
     flex-direction: column;
     padding-bottom: calc(48px + var(--safe-bottom));
-    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.15);
-    border-top: 1px solid var(--fin-glass-border);
+    background: var(--fin-bg-base);
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.10);
+    border-top: 1px solid var(--fin-border);
     will-change: transform, opacity;
 }
 
@@ -1523,12 +1524,15 @@ body {
     border: 1px solid var(--fin-glass-border);
 }
 
-/* Sheet gets its own lighter blur for smooth open/close performance */
+/* Sheet: solid background, no glass for performance */
 .sheet {
-    background: var(--fin-glass-bg);
-    backdrop-filter: blur(10px) saturate(150%);
-    -webkit-backdrop-filter: blur(10px) saturate(150%);
-    border: 1px solid var(--fin-glass-border);
+    background: var(--fin-bg-base);
+    border: 1px solid var(--fin-border);
+}
+
+:root[data-theme="dark"] .sheet {
+    background: #1C1C1E;
+    border-color: rgba(84, 84, 88, 0.4);
 }
 
 #finance-app-root .page-view {
@@ -1539,7 +1543,55 @@ body {
     display: block;
 }
 
-/* slideUp keyframe removed — page transitions are now instant for native-app feel */
+/* ==========================================================================
+   BUDGET CATEGORY CHIP TABS
+   ========================================================================== */
+#finance-app-root .budget-cat-chips-row {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+}
+
+#finance-app-root .budget-cat-chips-row::-webkit-scrollbar {
+    display: none;
+}
+
+#finance-app-root .budget-cat-chip {
+    flex: 0 0 auto;
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1.5px solid var(--fin-border);
+    background: var(--fin-bg-base);
+    color: var(--fin-text-muted);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+#finance-app-root .budget-cat-chip:active {
+    transform: scale(0.92);
+}
+
+#finance-app-root .budget-cat-chip.active {
+    background: var(--fin-primary-soft);
+    color: var(--fin-primary);
+    border-color: var(--fin-primary);
+    font-weight: 800;
+}
+
+#finance-app-root .budget-cat-chip i {
+    font-size: 12px;
+}
 
 #finance-app-root .toast {
     position: absolute;

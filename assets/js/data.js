@@ -830,27 +830,60 @@
                 'Jadikan Template?',
                 `${ids.length} budget akan disimpan sebagai template.`,
                 async () => {
-                    try {
-                        const toInsert = ids.map(bid => {
-                            const b = (S.budgets || []).find(x => x.id == bid);
-                            if (!b) return null;
-                            return {
-                                id: genId('bt'),
-                                name: b.name,
-                                'limit': b.limit,
-                                start_date: b.start_date,
-                                duration_days: b.duration_days,
-                                user_id: S.user.id
-                            };
-                        }).filter(Boolean);
+                    const existingTemplates = S.budgetTemplates || [];
 
-                        await sb.from('budget_templates').insert(toInsert);
+                    const toInsert = ids.map(bid => {
+                        const b = (S.budgets || []).find(x => x.id == bid);
+                        if (!b) return null;
+
+                        // Cegah duplikasi: skip jika sudah ada template dengan nama + limit sama
+                        const isDuplicate = existingTemplates.some(
+                            t => t.name === b.name && String(t.limit) === String(b.limit)
+                        );
+                        if (isDuplicate) return null;
+
+                        return {
+                            id: genId('bt'),
+                            name: b.name,
+                            'limit': b.limit,
+                            start_date: b.start_date,
+                            duration_days: b.duration_days,
+                            user_id: S.user.id
+                        };
+                    }).filter(Boolean);
+
+                    const skipped = ids.length - toInsert.length;
+
+                    if (!toInsert.length) {
+                        U.toast('Semua budget sudah ada di template (duplikat dilewati)');
                         S.selectedBudgetIds = new Set();
+                        const bar = document.getElementById('budget-bulk-bar');
+                        if (bar) bar.classList.remove('active');
                         D.render.budgets();
-                        D.data.fetchRemote();
-                        U.toast(`${toInsert.length} template disimpan!`);
+                        return;
+                    }
+
+                    // Optimistic UI: tambah ke state lokal langsung
+                    S.budgetTemplates = [...existingTemplates, ...toInsert];
+                    S.selectedBudgetIds = new Set();
+                    const bar = document.getElementById('budget-bulk-bar');
+                    if (bar) bar.classList.remove('active');
+                    D.render.budgets();
+
+                    const msg = skipped > 0
+                        ? `${toInsert.length} template disimpan (${skipped} duplikat dilewati)`
+                        : `${toInsert.length} template disimpan!`;
+                    U.toast(msg);
+
+                    // Sync DB di background
+                    try {
+                        await sb.from('budget_templates').insert(toInsert);
                     } catch (e) {
-                        U.toast('Gagal menyimpan template');
+                        console.error('Template save error:', e);
+                        // Rollback optimistic update
+                        S.budgetTemplates = existingTemplates;
+                        U.toast('Gagal menyimpan template — coba lagi');
+                        D.data.fetchRemote();
                     }
                 },
                 'primary', 'Simpan Template'

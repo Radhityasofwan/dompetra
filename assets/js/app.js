@@ -860,15 +860,20 @@
                 return exp ? today > exp : false;
             };
 
-            /* --- Pipeline: filter by status + search --- */
-            const bf = S.budgetFilter || { status: 'active', search: '' };
+            /* --- Render category chips --- */
+            if (D.utils && typeof D.utils.renderBudgetCatChips === 'function') D.utils.renderBudgetCatChips();
+
+            /* --- Pipeline: filter by status + search + catId --- */
+            const bf = S.budgetFilter || { status: 'active', search: '', catId: 'all' };
             const q = (bf.search || '').toLowerCase().trim();
+            const fCatId = bf.catId || 'all';
 
             let bs = (S.budgets || []).filter(b => {
                 const exp = isExpired(b);
                 if (bf.status === 'active' && exp) return false;
                 if (bf.status === 'expired' && !exp) return false;
                 if (q && !(b.name || '').toLowerCase().includes(q)) return false;
+                if (fCatId !== 'all' && b.catId != fCatId) return false;
                 return true;
             });
 

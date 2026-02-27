@@ -7,10 +7,16 @@
             </div>
             <div style="display:flex; gap:8px;">
                 <button
-                    style="background:rgba(255,255,255,0.2); border:none; color:white; width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer;"
+                    style="background:rgba(255,255,255,0.2); border:none; color:white; width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer; transition:transform 0.12s, opacity 0.12s; active:transform:scale(0.88);"
+                    onmousedown="this.style.opacity='0.7'; this.style.transform='scale(0.88)';"
+                    onmouseup="this.style.opacity='1'; this.style.transform='scale(1)';"
+                    ontouchstart="this.style.opacity='0.7'; this.style.transform='scale(0.88)';"
+                    ontouchend="this.style.opacity='1'; this.style.transform='scale(1)';"
                     onclick="Dompetra.modals.openTemplateManager()"><i class="ph-bold ph-bookmarks"></i></button>
                 <button
-                    style="background:rgba(255,255,255,0.2); border:none; color:white; width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer;"
+                    style="background:rgba(255,255,255,0.2); border:none; color:white; width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer; transition:transform 0.12s;"
+                    onmousedown="this.style.transform='scale(0.88)';" onmouseup="this.style.transform='scale(1)';"
+                    ontouchstart="this.style.transform='scale(0.88)';" ontouchend="this.style.transform='scale(1)';"
                     onclick="Dompetra.modals.openPicker('budget')"><i class="ph-bold ph-plus"></i></button>
             </div>
         </div>
@@ -23,9 +29,18 @@
         <div style="position:relative;">
             <i class="ph-bold ph-magnifying-glass"
                 style="position:absolute; left:18px; top:50%; transform:translateY(-50%); color:var(--fin-text-muted); font-size:18px; pointer-events:none;"></i>
-            <input type="text" id="budget-search" class="inp-std w-100" placeholder="Cari budget..." autocomplete="off"
-                oninput="Dompetra.utils.onBudgetSearch(this.value)"
-                style="padding-left:48px; padding-top:14px; padding-bottom:14px; border-radius:18px; font-size:15px;">
+            <input type="text" id="budget-search" class="inp-std w-100" placeholder="Cari catatan budget..."
+                autocomplete="off" oninput="Dompetra.utils.onBudgetSearch(this.value)"
+                style="padding-left:48px; padding-top:14px; padding-bottom:14px; border-radius:18px; font-size:15px; -webkit-user-select:text; user-select:text;">
+        </div>
+    </div>
+
+    <!-- Category Chip Tabs (horizontal scroll) -->
+    <div style="padding:0 24px 12px; overflow:hidden;">
+        <div id="budget-cat-chips" class="budget-cat-chips-row">
+            <!-- populated by renderBudgetCatChips() -->
+            <div class="budget-cat-chip active" data-catid="all" onclick="Dompetra.utils.setBudgetCatFilter('all')">
+                Semua</div>
         </div>
     </div>
 
