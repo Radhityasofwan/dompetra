@@ -346,7 +346,8 @@
                 } else if (mode === 'budget') {
                     const startDate = U.id('budget-start')?.value || new Date().toISOString().slice(0, 10);
                     const duration = parseInt(U.id('budget-duration')?.value || '30');
-                    const catId = U.id('budget-cat-id')?.value || null;
+                    // FIX: Use tx-cat-id (written by strip selection) as primary; fallback to budget-cat-id
+                    const catId = U.id('tx-cat-id')?.value || U.id('budget-cat-id')?.value || null;
 
                     const pl = {
                         name: desc || 'Budget',
@@ -523,16 +524,26 @@
                     await sb.from('categories').update(pl).eq('id', id);
                     const idx = S.cats.findIndex(c => c.id == id);
                     if (idx > -1) S.cats[idx] = { ...S.cats[idx], ...pl };
+
+                    // FIX: If this edited cat is the one currently selected in the TX form,
+                    // update the badge immediately so UI reflects the new name
+                    if (currTxCatId == id) {
+                        const badge = U.id('tx-cat-badge');
+                        if (badge && txMode !== 'budget') badge.innerText = name;
+                    }
                 } else {
                     const newId = genId('c');
                     const newCat = { ...pl, id: newId };
                     S.cats.push(newCat);
                     await sb.from('categories').insert(newCat);
 
-                    // If we just added a new cat, auto-select it if possible
-                    if (!currTxCatId || currTxCatId === 'undefined') {
+                    // If no cat selected yet, auto-select the new one (both hidden inputs)
+                    if (!currTxCatId || currTxCatId === '' || currTxCatId === 'undefined') {
                         U.id('tx-cat-id').value = newId;
-                        U.id('tx-cat-badge').innerText = name;
+                        const budgetCatEl = U.id('budget-cat-id');
+                        if (budgetCatEl) budgetCatEl.value = newId;
+                        const badge = U.id('tx-cat-badge');
+                        if (badge && txMode !== 'budget') badge.innerText = name;
                     }
                 }
 
@@ -550,6 +561,7 @@
                 U.toast('Gagal simpan kategori');
             }
         },
+
 
         delCat: async () => {
             const id = U.id('cat-id').value;

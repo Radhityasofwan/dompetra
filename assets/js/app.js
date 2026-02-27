@@ -148,6 +148,9 @@
             U.closeAll();
             U.id('tx-id').value = '';
             U.id('tx-cat-id').value = catId;
+            // Keep budget-cat-id in sync so saveMain() always has correct catId regardless of mode
+            const budgetCatEl = U.id('budget-cat-id');
+            if (budgetCatEl) budgetCatEl.value = catId;
             U.id('tx-mode').value = mode;
 
             if (D.pad && typeof D.pad.clear === 'function') {
@@ -241,14 +244,14 @@
             const cat = S.cats.find(c => c.id == catId);
             if (!cat) return;
 
+            // Single source of truth: always write to both hidden inputs
             U.id('tx-cat-id').value = catId;
-            U.id('tx-cat-badge').innerText = cat.name;
+            const budgetCatEl = U.id('budget-cat-id');
+            if (budgetCatEl) budgetCatEl.value = catId;
+            U.id('tx-cat-badge').innerText = mode === 'budget' ? 'Budget' : cat.name;
 
             // Re-render strip to update highlight
             D.modals.renderCatStrip(mode, catId);
-
-            // If it's a TX, we might need to refresh budget list if budget list is cat-specific
-            // (Current implementation doesn't seem to enforce that yet, but good for future)
         },
 
         /* Long press timer */
@@ -268,13 +271,15 @@
         /* NESTED MODAL: Category Quick Manage */
         openCatQuick: (id, mode) => {
             const overlay = document.getElementById('modalCatQuick');
+            const sheet = document.getElementById('modalCatQuickSheet');
             if (!overlay) return;
 
             U.id('cat-quick-id').value = id || '';
             U.id('cat-quick-mode').value = mode || 'tx';
 
             if (id) {
-                const c = S.cats.find(x => x.id == id);
+                const c = (S.cats || []).find(x => x.id == id);
+                if (!c) return;
                 U.id('cat-quick-title').innerText = 'Edit Kategori';
                 U.id('cat-quick-name').value = c.name;
                 U.id('cat-quick-type').value = c.type;
@@ -288,12 +293,21 @@
                 U.id('cat-quick-del-btn').style.display = 'none';
             }
 
-            overlay.classList.add('open');
+            // FIX: modalCatQuick uses inline styles, not .modal-backdrop — must control via style directly
+            overlay.style.opacity = '1';
+            overlay.style.pointerEvents = 'auto';
+            if (sheet) {
+                sheet.style.transform = 'translateY(0)';
+            }
         },
 
         closeCatQuick: () => {
             const overlay = document.getElementById('modalCatQuick');
-            if (overlay) overlay.classList.remove('open');
+            const sheet = document.getElementById('modalCatQuickSheet');
+            if (!overlay) return;
+            overlay.style.opacity = '0';
+            overlay.style.pointerEvents = 'none';
+            if (sheet) sheet.style.transform = 'translateY(100%)';
         },
 
         editItem: (id, type) => {
@@ -330,13 +344,21 @@
             if (type === 'tx') {
                 const t = S.txs.find(x => x.id == id);
                 if (t) {
-                    U.id('tx-cat-id').value = t.catId;
+                    // Set both hidden inputs — single source of truth
+                    U.id('tx-cat-id').value = t.catId || '';
+                    const budgetCatEl2 = U.id('budget-cat-id');
+                    if (budgetCatEl2) budgetCatEl2.value = t.catId || '';
                     D.pad.set(t.amount);
                     U.id('tx-desc').value = t.desc;
                     U.id('tx-date').value = t.date.slice(0, 10);
                     U.id('tx-title').innerText = 'Edit Transaksi';
                     U.renderWalletSelector(t.walletId);
                     U.refreshBudgetDropdown(t.budgetId);
+                    // FIX: render cat strip so selection shows correct highlighted category
+                    D.modals.renderCatStrip('tx', t.catId);
+                    const catBadgeEl = U.id('tx-cat-badge');
+                    const catFound = (S.cats || []).find(c => c.id == t.catId);
+                    if (catBadgeEl && catFound) catBadgeEl.innerText = catFound.name;
                 }
             } else if (type === 'budget') {
                 const b = S.budgets.find(x => x.id == id);
@@ -344,15 +366,18 @@
                     D.pad.set(b.limit);
                     U.id('tx-desc').value = b.name;
                     U.id('tx-title').innerText = 'Edit Budget';
-                    /* FIX: load dates from DB record, NOT default to today */
+                    // Load dates
                     const budgetStart = U.id('budget-start');
                     const budgetDur = U.id('budget-duration');
                     if (budgetStart) budgetStart.value = b.start_date ? b.start_date.slice(0, 10) : new Date().toISOString().slice(0, 10);
                     if (budgetDur) budgetDur.value = b.duration_days || 30;
-                    /* Load budget catId into hidden field */
+                    // FIX: sync BOTH catId hidden inputs so strip + save are both correct
+                    U.id('tx-cat-id').value = b.catId || '';
                     const budgetCatEl = U.id('budget-cat-id');
                     if (budgetCatEl) budgetCatEl.value = b.catId || '';
                     U.calcEndDate();
+                    // FIX: render strip so cat is visible and highlighted in edit mode
+                    D.modals.renderCatStrip('budget', b.catId);
                 }
 
             } else if (type === 'goal') {

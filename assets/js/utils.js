@@ -70,6 +70,11 @@ Object.assign(D.utils, {
         document.querySelectorAll('.modal-backdrop').forEach(el => {
             el.classList.remove('open');
         });
+        // FIX: modalCatQuick uses inline styles (not .modal-backdrop class) — close it separately
+        const cq = document.getElementById('modalCatQuick');
+        const cqs = document.getElementById('modalCatQuickSheet');
+        if (cq) { cq.style.opacity = '0'; cq.style.pointerEvents = 'none'; }
+        if (cqs) cqs.style.transform = 'translateY(100%)';
     },
 
     openModal: (id, focusElId) => {
