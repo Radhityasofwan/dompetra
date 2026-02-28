@@ -272,7 +272,7 @@ body {
 .mesh-blob {
     position: absolute;
     border-radius: 50%;
-    animation: floatBlob 15s infinite alternate ease-in-out;
+    /* animation: floatBlob 15s infinite alternate ease-in-out; - Removed for performance */
     opacity: 0.8;
     pointer-events: none;
 }
@@ -384,8 +384,8 @@ body {
     width: 92%;
     max-width: 380px;
     background: rgba(30, 41, 59, 0.85);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    /* backdrop-filter: blur(20px) saturate(180%); */
+    /* -webkit-backdrop-filter: blur(20px) saturate(180%); */
     border: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.25);
     border-radius: 99px;
@@ -500,8 +500,8 @@ body {
     align-items: center;
     justify-content: center;
     padding: 32px;
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
+    /* backdrop-filter: blur(15px); */
+    /* -webkit-backdrop-filter: blur(15px); */
 }
 
 #finance-app-root #auth-screen.active {
@@ -1539,8 +1539,8 @@ body {
 .score-breakdown,
 .chart-cont {
     background: var(--fin-glass-bg);
-    backdrop-filter: blur(12px) saturate(160%);
-    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    /* backdrop-filter: blur(12px) saturate(160%); */
+    /* -webkit-backdrop-filter: blur(12px) saturate(160%); */
     border: 1px solid var(--fin-glass-border);
 }
 
