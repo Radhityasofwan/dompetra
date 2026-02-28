@@ -705,7 +705,10 @@
                     const w = (S.wallets || []).find(w => w.is_main) || S.wallets[0];
                     if (!catId || !w) return U.toast('Data tidak lengkap (Dompet/Kategori kosong)');
 
+                    const newId = genId('tx');
+
                     const pl = {
+                        id: newId,
                         amount,
                         desc,
                         "catId": catId,
@@ -718,7 +721,7 @@
                     };
 
                     // Optimistic update state lokal
-                    S.txs.unshift({ ...pl, id: genId('tx') });
+                    S.txs.unshift(pl);
                     const wIdx = S.wallets.findIndex(wl => wl.id === w.id);
                     if (wIdx > -1) S.wallets[wIdx].balance = parseFloat(S.wallets[wIdx].balance) - amount;
                     D.utils.applyFilter();

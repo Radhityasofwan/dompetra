@@ -1,4 +1,9 @@
 <?php
+// Anti-Cache Headers (Force browser to fetch latest HTML)
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
 require_once __DIR__ . '/config/app.php';
 include __DIR__ . '/includes/header.php';
 ?>
@@ -155,7 +160,15 @@ include __DIR__ . '/includes/header.php';
         </div>
 
         <!-- CONTENT / PAGES -->
-        <div class="app-content">
+        <div class="app-content" id="app-scroll-content">
+            <!-- PULL TO REFRESH INDICATOR -->
+            <div id="ptr-indicator" class="ptr-indicator">
+                <i class="ph-bold ph-arrow-down" id="ptr-icon" style="font-size:24px; color:var(--fin-primary);"></i>
+                <div class="loader-spinner" id="ptr-spinner"
+                    style="display:none; width:24px; height:24px; border-width:3px; border-color:rgba(15,82,186,0.2); border-top-color:var(--fin-primary); margin:0;">
+                </div>
+            </div>
+
             <!-- GROUP SWITCHER -->
             <div id="global-group-switcher" style="display:none;">
                 <div class="group-switcher">

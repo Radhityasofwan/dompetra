@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dompetra-v8';
+const CACHE_NAME = 'dompetra-v9';
 const urlsToCache = [
   '/',
   '/index.php',
@@ -9,9 +9,9 @@ self.addEventListener('install', event => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-        return Promise.allSettled(
-            urlsToCache.map(url => cache.add(url).catch(err => console.warn('Cache gagal:', url)))
-        );
+      return Promise.allSettled(
+        urlsToCache.map(url => cache.add(url).catch(err => console.warn('Cache gagal:', url)))
+      );
     })
   );
 });
@@ -44,7 +44,7 @@ self.addEventListener('fetch', event => {
 });
 
 // --- PUSH NOTIFICATION LISTENER ---
-self.addEventListener('push', function(event) {
+self.addEventListener('push', function (event) {
   if (!(self.Notification && self.Notification.permission === 'granted')) {
     return;
   }
@@ -52,9 +52,9 @@ self.addEventListener('push', function(event) {
   let data = {};
   if (event.data) {
     try {
-        data = event.data.json();
+      data = event.data.json();
     } catch (e) {
-        data = { title: 'Dompetra', body: event.data.text() };
+      data = { title: 'Dompetra', body: event.data.text() };
     }
   } else {
     data = { title: 'Dompetra', body: 'Ada pesan baru untukmu!' };
@@ -76,7 +76,7 @@ self.addEventListener('push', function(event) {
 });
 
 // --- NOTIFICATION CLICK LISTENER ---
-self.addEventListener('notificationclick', function(event) {
+self.addEventListener('notificationclick', function (event) {
   event.notification.close();
   event.waitUntil(
     clients.matchAll({ type: 'window' }).then(windowClients => {

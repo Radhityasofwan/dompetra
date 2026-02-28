@@ -375,6 +375,29 @@ body {
     pointer-events: none;
 }
 
+/* --- 3.5 PULL TO REFRESH --- */
+.ptr-indicator {
+    position: absolute;
+    top: -60px;
+    /* Hidden above the scroll area */
+    left: 0;
+    width: 100%;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    transition: transform 0.3s var(--ios-ease);
+}
+
+.ptr-indicator i {
+    transition: transform 0.3s var(--ios-ease);
+}
+
+.ptr-indicator.active i {
+    transform: rotate(180deg);
+}
+
 /* --- 4. IOS INSTALL CAPSULE --- */
 .ios-install-capsule {
     position: fixed;
