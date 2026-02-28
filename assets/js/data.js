@@ -344,6 +344,70 @@
                         await sb.from('wallets').update({ balance: nv }).eq('id', walletId);
                     }
 
+                    // --- PUSH NOTIFICATION TRIGGER ---
+                    setTimeout(() => {
+                        const messages = [];
+                        let targetUserIds = [];
+                        const isShared = !!S.activeGroupId;
+
+                        // 1. Notif Grup (Shared Wallet)
+                        if (isShared && S.members && S.members.length > 0) {
+                            targetUserIds = S.members.filter(m => m.user_id !== S.user.id).map(m => m.user_id);
+                            const wName = ((S.wallets || []).find(w => w.id == walletId) || {}).name || 'Dompet Grup';
+                            messages.push({
+                                title: `🤝 Aktivitas Baru!`,
+                                body: `${S.user.full_name.split(' ')[0]} catat ${type === 'income' ? 'Pemasukan' : 'Pengeluaran'} Rp ${U.fmtMoney(amount)}.`
+                            });
+                            messages.push({
+                                title: `💳 ${wName}`,
+                                body: `Keterangan: ${desc || 'Tanpa keterangan'}`
+                            });
+                        } else {
+                            targetUserIds = [S.user.id]; // Kirim ke diri sendiri (perangkat lain)
+
+                            // 2. Notif Anggaran Pribadi (Budget Remaining)
+                            if (type === 'expense' && budgetId) {
+                                const budget = (S.budgets || []).find(b => b.id == budgetId);
+                                if (budget) {
+                                    const limit = parseFloat(budget.limit);
+                                    let totalUsed = amount;
+                                    (S.txs || []).forEach(tx => {
+                                        if (tx.id !== newId && tx.budgetId == budgetId && tx.type === 'expense') {
+                                            totalUsed += parseFloat(tx.amount) || 0;
+                                        }
+                                    });
+                                    const remains = limit - totalUsed;
+
+                                    messages.push({
+                                        title: `💬 Transaksi Tercatat!`,
+                                        body: `Pengeluaran Rp ${U.fmtMoney(amount)} masuk ke ${budget.name}.`
+                                    });
+
+                                    if (remains >= 0) {
+                                        messages.push({
+                                            title: `📉 Info Anggaran!`,
+                                            body: `Sisa budget ${budget.name} tinggal Rp ${U.fmtMoney(remains)}.`
+                                        });
+                                    } else {
+                                        messages.push({
+                                            title: `🚨 Overbudget!`,
+                                            body: `Budget ${budget.name} kamu sudah minus Rp ${U.fmtMoney(Math.abs(remains))}!`
+                                        });
+                                    }
+                                }
+                            }
+                        }
+
+                        // Kirim ke API Sentral
+                        if (targetUserIds.length > 0 && messages.length > 0) {
+                            fetch('/api/send_push_message.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ targetUserIds, messages })
+                            }).catch(() => { });
+                        }
+                    }, 1500);
+
                 } else if (mode === 'budget') {
                     const startDate = U.id('budget-start')?.value || new Date().toISOString().slice(0, 10);
                     const duration = parseInt(U.id('budget-duration')?.value || '30');
@@ -383,9 +447,31 @@
 
                     if (id) {
                         const gIdx = S.goals.findIndex(g => g.id == id);
-                        if (gIdx > -1) S.goals[gIdx] = { ...S.goals[gIdx], ...pl };
+                        let oldCurrent = 0;
+                        if (gIdx > -1) {
+                            oldCurrent = parseFloat(S.goals[gIdx].current) || 0;
+                            S.goals[gIdx] = { ...S.goals[gIdx], ...pl };
+                        }
                         D.render.goals();
                         await sb.from('goals').update(pl).eq('id', id);
+
+                        // Trigger Notif Goal Tercapai
+                        if (oldCurrent >= amount) {
+                            setTimeout(() => {
+                                fetch('/api/send_push_message.php', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        targetUserIds: [S.user.id],
+                                        messages: [
+                                            { title: `🎉 Yeay! Target Tercapai!`, body: `Impian ${pl.name} sudah lunas.` },
+                                            { title: `💰 Dana Terkumpul`, body: `Rp ${U.fmtMoney(amount)} sudah siap digunakan.` }
+                                        ]
+                                    })
+                                }).catch(() => { });
+                            }, 500);
+                        }
+
                     } else {
                         const newG = { ...pl, id: genId('g'), current: 0 };
                         S.goals.push(newG);
